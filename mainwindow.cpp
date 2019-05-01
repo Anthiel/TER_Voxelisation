@@ -1,6 +1,58 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
+#include <iostream>
+#include <DGtal/helpers/StdDefs.h>
+#include <DGtal/base/Common.h>
+#include <DGtal/shapes/Mesh.h>
+#include <DGtal/shapes/MeshVoxelizer.h>
+#include <DGtal/io/boards/Board3D.h>
+#include <DGtal/io/writers/MeshWriter.h>
+
+using namespace std;
+using namespace DGtal;
+
+void MainWindow::voxel(){
+    trace.beginBlock ( "Example MeshVoxelizer" );
+    using namespace Z3i;
+    Mesh<Point> aMesh;
+    trace.info()<<"Creating a cube"<<std::endl;
+    //Creating a cube
+    aMesh.addVertex(Point(0,0,0));
+    aMesh.addVertex(Point(1,0,0));
+    aMesh.addVertex(Point(1,1,0));
+    aMesh.addVertex(Point(0,1,0));
+    aMesh.addVertex(Point(0,1,1));
+    aMesh.addVertex(Point(1,1,1));
+    aMesh.addVertex(Point(1,0,1));
+    aMesh.addVertex(Point(0,0,1));
+
+    aMesh.addQuadFace(0,1,2,3);
+    aMesh.addQuadFace(1,2,5,6);
+    aMesh.addQuadFace(7,6,5,4);
+    aMesh.addQuadFace(3,2,5,4);
+    aMesh.addQuadFace(0,3,4,7);
+    aMesh.addQuadFace(0,1,6,7);
+
+    Domain domain(Point(0,0,0), Point(1,1,1));
+    DigitalSet outputSet(domain);
+
+    MeshVoxelizer<DigitalSet, 6> voxelizer;
+    trace.info()<<"Digitization..."<<std::endl;
+    voxelizer.voxelize(outputSet, aMesh, 15.0);
+    trace.info()<<"Got "<< outputSet.size() << " voxels."<<std::endl;
+    Board3D<> board;
+    for(auto voxel : outputSet)
+      board << voxel;
+    board.saveOBJ("voxelizedCube.obj");
+
+
+    trace.endBlock();
+}
+
+
+
 /* **** début de la partie boutons et IHM **** */
 void MainWindow::on_actionOuvrir_triggered()
 {
@@ -243,3 +295,8 @@ MainWindow::~MainWindow()
 }
 
 
+
+void MainWindow::on_pushButton_clicked()
+{
+    voxel();
+}

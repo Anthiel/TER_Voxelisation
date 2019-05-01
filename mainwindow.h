@@ -6,6 +6,15 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 
+#include <iostream>
+#include <DGtal/helpers/StdDefs.h>
+#include <DGtal/base/Common.h>
+#include <DGtal/shapes/Mesh.h>
+#include <DGtal/shapes/MeshVoxelizer.h>
+#include <DGtal/io/boards/Board3D.h>
+#include <DGtal/io/writers/MeshWriter.h>
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -38,12 +47,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-
+    void voxel();
     void displayMesh(MyMesh *_mesh, bool isTemperatureMap = false, float mapRange = -1);
     void resetAllColorsAndThickness(MyMesh* _mesh);
 
 private slots:
     void on_actionOuvrir_triggered();
+
+    void on_pushButton_clicked();
 
 private:
 
