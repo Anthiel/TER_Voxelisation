@@ -13,42 +13,50 @@
 using namespace std;
 using namespace DGtal;
 
-void MainWindow::voxel(){
-    trace.beginBlock ( "Example MeshVoxelizer" );
+void MainWindow::voxel(MyMesh* _mesh){
+
+    trace.beginBlock("Voxelizer");
     using namespace Z3i;
     Mesh<Point> aMesh;
-    trace.info()<<"Creating a cube"<<std::endl;
-    //Creating a cube
-    aMesh.addVertex(Point(0,0,0));
-    aMesh.addVertex(Point(1,0,0));
-    aMesh.addVertex(Point(1,1,0));
-    aMesh.addVertex(Point(0,1,0));
-    aMesh.addVertex(Point(0,1,1));
-    aMesh.addVertex(Point(1,1,1));
-    aMesh.addVertex(Point(1,0,1));
-    aMesh.addVertex(Point(0,0,1));
 
-    aMesh.addQuadFace(0,1,2,3);
-    aMesh.addQuadFace(1,2,5,6);
-    aMesh.addQuadFace(7,6,5,4);
-    aMesh.addQuadFace(3,2,5,4);
-    aMesh.addQuadFace(0,3,4,7);
-    aMesh.addQuadFace(0,1,6,7);
+    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
+        VertexHandle current = *curVert;
+        OpenMesh::Vec3f point = _mesh->point(current);
+        aMesh.addVertex(Point(point[0], point[1], point[2]));
+        trace.info() << "Added vertex (" << point[0] << " " << point[1] << " " << point[2] << ")" << std::endl;
+    }
 
-    Domain domain(Point(0,0,0), Point(128,128,128));
+    for(MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++){
+        FaceHandle current = *curFace;
+        std::vector<int> verticesIndex;
+        for(MyMesh::FaceVertexIter curVert = _mesh->fv_iter(current); curVert.is_valid(); curVert++){
+            VertexHandle currentVertex = *curVert;
+            verticesIndex.push_back(currentVertex.idx());
+        }
+        if(verticesIndex.size() == 3) {
+            aMesh.addTriangularFace(verticesIndex[0], verticesIndex[1], verticesIndex[2]);
+            trace.info() << "Added face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
+        }
+    }
+
+    Domain domain(Point(0,0,0), Point(128, 128, 128));
     DigitalSet outputSet(domain);
 
     MeshVoxelizer<DigitalSet, 6> voxelizer;
-    trace.info()<<"Digitization..."<<std::endl;
-    voxelizer.voxelize(outputSet, aMesh, 15.0);
-    trace.info()<<"Got "<< outputSet.size() << " voxels."<<std::endl;
+    trace.info() << "Digitization..." << std::endl;
+    voxelizer.voxelize(outputSet, aMesh, 15.0 /* scaleFactor */);
+    trace.info()<< "Got " << outputSet.size() << " voxels." << std::endl;
     Board3D<> board;
     for(auto voxel : outputSet)
       board << voxel;
     board.saveOBJ("voxelizedCube.obj");
-
-
     trace.endBlock();
+
+    // chargement du fichier .obj dans la variable globale "mesh"
+    OpenMesh::IO::read_mesh(mesh, "voxelizedCube.obj");
+    mesh.update_normals();
+    resetAllColorsAndThickness(&mesh);
+    displayMesh(&mesh);
 }
 
 
@@ -67,6 +75,7 @@ void MainWindow::on_actionOuvrir_triggered()
     // initialisation des couleurs et épaisseurs (sommets et arêtes) du mesh
     resetAllColorsAndThickness(&mesh);
 
+    voxel(&mesh);
     // on affiche le maillage
     displayMesh(&mesh);
 }
@@ -298,5 +307,5 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    voxel();
+    voxel(&mesh);
 }
