@@ -35,7 +35,7 @@ void MainWindow::voxel(){
     aMesh.addQuadFace(0,3,4,7);
     aMesh.addQuadFace(0,1,6,7);
 
-    Domain domain(Point(0,0,0), Point(1,1,1));
+    Domain domain(Point(0,0,0), Point(128,128,128));
     DigitalSet outputSet(domain);
 
     MeshVoxelizer<DigitalSet, 6> voxelizer;
