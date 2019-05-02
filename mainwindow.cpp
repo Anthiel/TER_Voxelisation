@@ -23,7 +23,7 @@ void MainWindow::voxel(MyMesh* _mesh){
         VertexHandle current = *curVert;
         OpenMesh::Vec3f point = _mesh->point(current);
         aMesh.addVertex(Point(point[0], point[1], point[2]));
-        trace.info() << "Added vertex (" << point[0] << " " << point[1] << " " << point[2] << ")" << std::endl;
+        //trace.info() << "Added vertex (" << point[0] << " " << point[1] << " " << point[2] << ")" << std::endl;
     }
 
     for(MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++){
@@ -35,11 +35,11 @@ void MainWindow::voxel(MyMesh* _mesh){
         }
         if(verticesIndex.size() == 3) {
             aMesh.addTriangularFace(verticesIndex[0], verticesIndex[1], verticesIndex[2]);
-            trace.info() << "Added face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
+            //trace.info() << "Added face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
         }
     }
 
-    Domain domain(Point(0,0,0), Point(128, 128, 128));
+    Domain domain(Point(-128,-128,-128), Point(128, 1280, 128));
     DigitalSet outputSet(domain);
 
     MeshVoxelizer<DigitalSet, 6> voxelizer;
