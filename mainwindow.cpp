@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "Space.h"
 
 #include <iostream>
 #include <DGtal/helpers/StdDefs.h>
@@ -75,7 +76,10 @@ void MainWindow::on_actionOuvrir_triggered()
     // initialisation des couleurs et épaisseurs (sommets et arêtes) du mesh
     resetAllColorsAndThickness(&mesh);
 
-    voxel(&mesh);
+    //voxel(&mesh);
+    Space world(&mesh);
+    world.CreateSpace();
+
     // on affiche le maillage
     displayMesh(&mesh);
 }
