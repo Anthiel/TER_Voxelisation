@@ -29,13 +29,13 @@ macx: {
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    meshviewerwidget.cpp \
-    world.cpp
+        meshviewerwidget.cpp \
+        Space.cpp
 
 HEADERS += \
         mainwindow.h \
-    meshviewerwidget.h \
-    world.h
+        meshviewerwidget.h \
+        Space.h
 
 FORMS += \
         mainwindow.ui
