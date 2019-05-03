@@ -3,6 +3,8 @@
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+#include <iostream>
+
 #include "mainwindow.h"
 
 using namespace OpenMesh;
