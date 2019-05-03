@@ -55,23 +55,30 @@ void Space::CreateSpace()
 
 
     int nombrePoint = 8;
-    int haut = 2;
+    int haut = 3;
     int lon = 2;
-    int lar = 3;
+    int lar = 2;
     vector<OpenMesh::Vec3f> points;
     OpenMesh::Vec3f point000 = {xMin,yMin,zMin};
-    OpenMesh::Vec3f pointinter = {xMin,yMax/2.0,zMin};
+    OpenMesh::Vec3f pointinter = {xMin,(yMax+yMin)/2.0,zMin};
     OpenMesh::Vec3f point010 = {xMin,yMax,zMin};
     OpenMesh::Vec3f point110 = {xMax,yMax,zMin};
-    OpenMesh::Vec3f pointinter2 = {xMax,yMax/2.0,zMin};
+    OpenMesh::Vec3f pointinter2 = {xMax,(yMax+yMin)/2.0,zMin};
     OpenMesh::Vec3f point100 = {xMax,yMin,zMin};
+
+    OpenMesh::Vec3f pointz1 = {xMin,yMin,(zMax+zMin)/2.0};
+    OpenMesh::Vec3f pointz2 = {xMin,yMax,(zMax+zMin)/2.0};
+    OpenMesh::Vec3f pointz3 = {xMax,yMax,(zMax+zMin)/2.0};
+    OpenMesh::Vec3f pointz4 = {xMax,yMin,(zMax+zMin)/2.0};
 
     OpenMesh::Vec3f point001 = {xMin,yMin,zMax};
     OpenMesh::Vec3f point011 = {xMin,yMax,zMax};
     OpenMesh::Vec3f point111 = {xMax,yMax,zMax};
     OpenMesh::Vec3f point101 = {xMax,yMin,zMax};
 
-    points = {point000, pointinter, point010, point100, pointinter2 ,point110, point001, point011, point101, point111};
+    qDebug() << "pointinter : " << (yMax-yMin)/2.0;
+
+    points = {point000, point010, point100 ,point110, pointz1, pointz2, pointz4, pointz3 ,point001, point011, point101, point111};
 
     ofstream myfile;
     myfile.open ("example.obj");
@@ -79,15 +86,19 @@ void Space::CreateSpace()
     for(auto i : points){
         myfile << "v " << i << "\n";
     }
+    int Etage = 0;
+    qDebug() << "début boucle";
+    for(int h = 0; h<haut ; h++){
+        for(int l = 1; l<lar ;l++){
+           for(int lo = 1; lo < lon ; lo++){
+               Etage = h*(lar*lon);
+               qDebug() << "Etage : " << Etage;
 
-
-    for(int l = 1; l<lar ;l++){
-       for(int lo = 1; lo < lon ; lo++){
-           myfile << "f " << l << " " << l+lar << " " << l+lar+1 << "\n";
-           myfile << "f " << l << " " << l+lar+1 << " " << l+1 << "\n";
-       }
+               myfile << "f " << l + Etage<< " " << l+lar+Etage << " " << l+lar+1+Etage << "\n";
+               myfile << "f " << l + Etage<< " " << l+lar+1+Etage << " " << l+1+Etage << "\n";
+           }
+        }
     }
-
 /*
     myfile << "f 1 2 3 \n";
     myfile << "f 1 4 3 \n";
