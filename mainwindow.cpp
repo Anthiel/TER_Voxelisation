@@ -47,15 +47,14 @@ MainWindow::~MainWindow()
 void MainWindow::voxelizeDGtal(MyMesh* _mesh){
 
     trace.beginBlock("Voxelizer");
-    using namespace Z3i;
-    Mesh<Point> aMesh;
+    Mesh<Z3i::Point> aMesh;
 
     this->ui->progressbar_voxeliser->setValue(10);
 
     for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
         VertexHandle current = *curVert;
         OpenMesh::Vec3f point = _mesh->point(current);
-        aMesh.addVertex(Point(point[0], point[1], point[2]));
+        aMesh.addVertex(Z3i::Point(point[0], point[1], point[2]));
         //trace.info() << "Added vertex (" << point[0] << " " << point[1] << " " << point[2] << ")" << std::endl;
     }
 
@@ -79,10 +78,10 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
 
     this->ui->progressbar_voxeliser->setValue(60);
 
-    Domain domain(Point(0,0,0), Point(128, 128, 128));
+    Z3i::Domain domain(Z3i::Point(0,0,0), Z3i::Point(128, 128, 128));
 
-    DigitalSet outputSet(domain);
-    MeshVoxelizer<DigitalSet, 6> voxelizer;
+    Z3i::DigitalSet outputSet(domain);
+    MeshVoxelizer<Z3i::DigitalSet, 6> voxelizer;
     trace.info() << "Digitization..." << std::endl;
     voxelizer.voxelize(outputSet, aMesh, 1.0 /* scaleFactor */);
     trace.info()<< "Got " << outputSet.size() << " voxels." << std::endl;
