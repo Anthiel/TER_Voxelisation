@@ -18,6 +18,8 @@ public:
     Space(MyMesh* _mesh);
     void CreateSpace();
     void InitXYZ();
+    vector<OpenMesh::Vec3f> GenerePoints(int haut, int lon, int lar);
+
 
 public:
     MyMesh* _mesh;

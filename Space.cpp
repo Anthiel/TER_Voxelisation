@@ -25,6 +25,19 @@ void Space::InitXYZ()
     zMax = initPoint[2], zMin = initPoint[2];
 }
 
+vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
+
+    vector<OpenMesh::Vec3f> points;
+    for(int ha = 0; ha<=haut; ha++){
+        for(int lo = 0; lo<= lon; lo++){
+            for(int la = 0; la<=lar; la++){
+                OpenMesh::Vec3f pointTMP = {xMin+(la/lar)*(xMax-xMin), yMin+(lo/lon)*(yMax-yMin), zMin+(ha/haut)*(zMax-zMin)};
+                points.push_back(pointTMP);
+            }
+        }
+    }
+    return points;
+}
 
 void Space::CreateSpace()
 /*Créer l'obj permettant de voir le quadrillage*/
@@ -54,11 +67,13 @@ void Space::CreateSpace()
              << " zMax :" << zMax << " zMin :" << zMin;
 
 
-    int nombrePoint = 8;
     int haut = 3;
-    int lon = 2;
-    int lar = 2;
-    vector<OpenMesh::Vec3f> points;
+    int lon = 3;
+    int lar = 3;
+
+    vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
+
+    /*
     OpenMesh::Vec3f point000 = {xMin,yMin,zMin};
     OpenMesh::Vec3f pointinter = {xMin,(yMax+yMin)/2.0,zMin};
     OpenMesh::Vec3f point010 = {xMin,yMax,zMin};
@@ -79,27 +94,43 @@ void Space::CreateSpace()
     qDebug() << "pointinter : " << (yMax-yMin)/2.0;
 
     points = {point000, point010, point100 ,point110, pointz1, pointz2, pointz4, pointz3 ,point001, point011, point101, point111};
-
+*/
     ofstream myfile;
     myfile.open ("example.obj");
 
     for(auto i : points){
         myfile << "v " << i << "\n";
     }
+
     int Etage = 0;
+    int EtageSuivant = 0;
+
     qDebug() << "début boucle";
+
     for(int h = 0; h<haut ; h++){
         for(int l = 1; l<lar ;l++){
            for(int lo = 1; lo < lon ; lo++){
-               Etage = h*(lar*lon);
+               Etage = h*lar*lon;
                qDebug() << "Etage : " << Etage;
 
+               // haut et bas du rectangle
                myfile << "f " << l + Etage<< " " << l+lar+Etage << " " << l+lar+1+Etage << "\n";
-               myfile << "f " << l + Etage<< " " << l+lar+1+Etage << " " << l+1+Etage << "\n";
+               myfile << "f " << l + Etage<< " " << l+lar+1+Etage << " " << l+1+Etage << "\n";               
            }
         }
-    }
-/*
+    }/*
+    qDebug() << "deuxieme partie";
+        for(int l = 1; l<lar ;l++){
+           for(int lo = 1; lo < lon ; lo++){
+
+              myfile << "f " << l << " " << l+lar << " " << l + (lar*lon) << "\n";
+              myfile << "f " << l + (lar*lon)+lar << " " << l+lar << " " << l + (lar*lon) << "\n";
+           }
+        }
+
+
+*/
+    /*
     myfile << "f 1 2 3 \n";
     myfile << "f 1 4 3 \n";
 
