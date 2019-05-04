@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QIcon>
 #include <QShortcut>
+#include <QDesktopWidget>
+#include <QMessageBox>
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
@@ -18,48 +20,48 @@
 #include <DGtal/io/boards/Board3D.h>
 #include <DGtal/io/writers/MeshWriter.h>
 
+
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 
 using namespace OpenMesh;
 using namespace OpenMesh::Attributes;
 
-struct MyTraits : public OpenMesh::DefaultTraits
-{
-    // use vertex normals and vertex colors
+
+struct MyTraits : public OpenMesh::DefaultTraits {
     VertexAttributes( OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color );
-    // store the previous halfedge
     HalfedgeAttributes( OpenMesh::Attributes::PrevHalfedge );
-    // use face normals face colors
     FaceAttributes( OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color );
     EdgeAttributes( OpenMesh::Attributes::Color );
-    // vertex thickness
-    VertexTraits{float thickness; float value;};
-    // edge thickness
-    EdgeTraits{float thickness;};
+    VertexTraits{ float thickness; float value; };
+    EdgeTraits{ float thickness; };
 };
+
 typedef OpenMesh::TriMesh_ArrayKernelT<MyTraits> MyMesh;
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
+
     Q_OBJECT
 
 public:
-
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
     void voxelizeDGtal(MyMesh *_mesh);
+    void voxelizePtal(MyMesh *_mesh);
     void displayMesh(MyMesh *_mesh, bool isTemperatureMap = false, float mapRange = -1);
     void resetAllColorsAndThickness(MyMesh* _mesh);
 
 private slots:
-    void on_pushButton_voxeliser_clicked();
     void on_action_RAW_triggered();
     void on_actionOuvrir_triggered();
-
     void on_actionQuitter_triggered();
+
+    void on_DGtalButton_clicked();
+    void on_PtalButton_clicked();
+
+    void on_AccuracySlider_sliderMoved(int position);
 
 private:
     const QIcon icon_open = QIcon(":/icons/open.png");

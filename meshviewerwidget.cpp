@@ -9,7 +9,6 @@ MeshViewerWidget::MeshViewerWidget(QWidget*_parent) : QGLWidget(_parent)
     setMouseTracking(true);
     setFocus();
 }
-
 MeshViewerWidget::MeshViewerWidget( QGLFormat& _fmt, QWidget* _parent ) : QGLWidget( _fmt, _parent )
 {
     setMouseTracking(true);
@@ -30,7 +29,6 @@ void MeshViewerWidget::initializeGL()
 
     glEnable( GL_MULTISAMPLE );
 }
-
 void MeshViewerWidget::translate( const OpenMesh::Vec3f& _trans )
 {
     glLoadIdentity();
@@ -38,14 +36,12 @@ void MeshViewerWidget::translate( const OpenMesh::Vec3f& _trans )
     glMultMatrixd( modelview_matrix_ );
     glGetDoublev( GL_MODELVIEW_MATRIX, modelview_matrix_);
 }
-
 void MeshViewerWidget::resizeGL( int _w, int _h )
 {
     update_projection_matrix();
     glViewport(0, 0, _w, _h);
     updateGL();
 }
-
 void MeshViewerWidget::reloadPOV()
 {
     glLoadIdentity();
@@ -55,7 +51,6 @@ void MeshViewerWidget::reloadPOV()
     set_scene_pos(Vec3f(0.0, 0.0, 0.0), 1.0);
     updateGL();
 }
-
 void MeshViewerWidget::loadMesh(GLfloat* verts, GLfloat* colors, int nVerts, GLuint* triangles, int nTriangles)
 {
     GLfloat* vertsColsArray = new GLfloat[nVerts * 2];
@@ -88,7 +83,6 @@ void MeshViewerWidget::loadMesh(GLfloat* verts, GLfloat* colors, int nVerts, GLu
 
     updateGL();
 }
-
 void MeshViewerWidget::loadLines(GLfloat* verts, GLfloat* colors, int nVerts, GLuint* lines, int nLines, QList<QPair<float, int> > es)
 {
     GLfloat* linesColsArray = new GLfloat[nVerts * 2];
@@ -122,7 +116,6 @@ void MeshViewerWidget::loadLines(GLfloat* verts, GLfloat* colors, int nVerts, GL
 
     updateGL();
 }
-
 void MeshViewerWidget::loadPoints(GLfloat* verts, GLfloat* colors, int nVerts, GLuint* points, int nPoints, QList<QPair<float, int> > vs)
 {
     GLfloat* pointsColsArray = new GLfloat[nVerts * 2];
@@ -156,8 +149,6 @@ void MeshViewerWidget::loadPoints(GLfloat* verts, GLfloat* colors, int nVerts, G
 
     updateGL();
 }
-
-
 void MeshViewerWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -253,8 +244,6 @@ void MeshViewerWidget::paintGL()
         glDisableClientState( GL_VERTEX_ARRAY );
     }
 }
-
-
 void MeshViewerWidget::set_scene_pos( const OpenMesh::Vec3f& _cog, float _radius )
 {
     center_ = _cog;
@@ -262,7 +251,6 @@ void MeshViewerWidget::set_scene_pos( const OpenMesh::Vec3f& _cog, float _radius
     update_projection_matrix();
     view_all();
 }
-
 void MeshViewerWidget::update_projection_matrix()
 {
     glMatrixMode( GL_PROJECTION );
@@ -271,7 +259,6 @@ void MeshViewerWidget::update_projection_matrix()
     glGetDoublev( GL_PROJECTION_MATRIX, projection_matrix_);
     glMatrixMode( GL_MODELVIEW );
 }
-
 void MeshViewerWidget::view_all()
 {
     translate( Vec3f( -(modelview_matrix_[0]*center_[0] + modelview_matrix_[4]*center_[1] + modelview_matrix_[8]*center_[2] + modelview_matrix_[12]), -(modelview_matrix_[1]*center_[0] + modelview_matrix_[5]*center_[1] + modelview_matrix_[9]*center_[2] + modelview_matrix_[13]), -(modelview_matrix_[2]*center_[0] + modelview_matrix_[6]*center_[1] + modelview_matrix_[10]*center_[2] + modelview_matrix_[14] + 3.0*radius_) ) );
@@ -281,7 +268,6 @@ void MeshViewerWidget::mousePressEvent( QMouseEvent* _event )
 {
     last_point_ok_ = map_to_sphere( last_point_2D_=_event->pos(), last_point_3D_ );
 }
-
 void MeshViewerWidget::mouseMoveEvent( QMouseEvent* _event )
 {
     QPoint newPoint2D = _event->pos();
@@ -338,12 +324,10 @@ void MeshViewerWidget::mouseMoveEvent( QMouseEvent* _event )
     last_point_ok_ = newPoint_hitSphere;
     updateGL();
 }
-
 void MeshViewerWidget::mouseReleaseEvent( QMouseEvent* /* _event */ )
 {
     last_point_ok_ = false;
 }
-
 void MeshViewerWidget::wheelEvent(QWheelEvent* _event)
 {
     float d = -(float)_event->delta() / 120.0 * 0.2 * radius_;
@@ -370,7 +354,6 @@ bool MeshViewerWidget::map_to_sphere( const QPoint& _v2D, OpenMesh::Vec3f& _v3D 
 
     return true;
 }
-
 void MeshViewerWidget::rotate( const OpenMesh::Vec3f& _axis, float _angle )
 {
     Vec3f t( modelview_matrix_[0]*center_[0] + modelview_matrix_[4]*center_[1] + modelview_matrix_[8]*center_[2] + modelview_matrix_[12], modelview_matrix_[1]*center_[0] + modelview_matrix_[5]*center_[1] + modelview_matrix_[9]*center_[2] + modelview_matrix_[13], modelview_matrix_[2]*center_[0] + modelview_matrix_[6]*center_[1] + modelview_matrix_[10]*center_[2] + modelview_matrix_[14] );

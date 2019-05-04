@@ -28,15 +28,13 @@ class MeshViewerWidget : public QGLWidget
 {
     Q_OBJECT
 public:
-    MeshViewerWidget(QWidget* _parent=0);
+    MeshViewerWidget(QWidget* _parent=nullptr);
     MeshViewerWidget(QGLFormat& _fmt, QWidget* _parent );
 
-    // events GL
     void initializeGL();
     void resizeGL(int _w, int _h);
     void paintGL();
 
-    // gestion de la vue et de la trackball
     void update_projection_matrix();
     void view_all();
     void set_scene_pos( const OpenMesh::Vec3f& _cog, float _radius );
@@ -49,34 +47,22 @@ public:
     void loadLines(GLfloat* verts, GLfloat* colors, int nVerts, GLuint* lines, int nLines, QList<QPair<float, int> > es);
     void loadPoints(GLfloat* verts, GLfloat* colors, int nVerts, GLuint* points, int nPoints, QList<QPair<float, int> > vs);
 
-    // buffer pour les VBO
     GLuint TriDataBuffers[2];
-    // Nombre de triangles du mesh (pour le call du draw)
     int triToDraw;
-
     GLuint LinesDataBuffers[2];
     int linesToDraw;
     QList<QPair<float, int> > edgeSizes;
-
     GLuint PointsDataBuffers[2];
     int pointsToDraw;
     QList<QPair<float, int> > vertsSizes;
-
-    // pour savoir si les buffer sont init
     bool init;
-
-    // variables de gestion de la vue et de la trackball
     OpenMesh::Vec3f  center_;
     float            radius_;
-
     GLdouble    projection_matrix_[16], modelview_matrix_[16];
-
     QPoint           last_point_2D_;
     OpenMesh::Vec3f  last_point_3D_;
     bool             last_point_ok_;
 protected:
-
-    // Qt mouse events
     virtual void mousePressEvent( QMouseEvent* );
     virtual void mouseReleaseEvent( QMouseEvent* );
     virtual void mouseMoveEvent( QMouseEvent* );
