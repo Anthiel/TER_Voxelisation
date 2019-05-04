@@ -61,7 +61,7 @@ private slots:
     void on_DGtalButton_clicked();
     void on_PtalButton_clicked();
 
-    void on_AccuracySlider_sliderMoved(int position);
+    void on_AccuracySlider_valueChanged(int value);
 
 private:
     const QIcon icon_open = QIcon(":/icons/open.png");

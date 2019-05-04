@@ -351,7 +351,7 @@ void MainWindow::on_PtalButton_clicked()
     this->voxelizePtal(&mesh);
 }
 
-void MainWindow::on_AccuracySlider_sliderMoved(int position)
+void MainWindow::on_AccuracySlider_valueChanged(int value)
 {
-    this->ui->AccuracyValueLabel->setText(QString::number(position));
+    this->ui->AccuracyValueLabel->setText(QString::number(value));
 }
