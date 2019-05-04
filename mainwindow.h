@@ -3,17 +3,20 @@
 
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QIcon>
+#include <QShortcut>
+
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 
 #include <iostream>
+
 #include <DGtal/helpers/StdDefs.h>
 #include <DGtal/base/Common.h>
 #include <DGtal/shapes/Mesh.h>
 #include <DGtal/shapes/MeshVoxelizer.h>
 #include <DGtal/io/boards/Board3D.h>
 #include <DGtal/io/writers/MeshWriter.h>
-
 
 namespace Ui {
 class MainWindow;
@@ -47,21 +50,25 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void voxel(MyMesh *_mesh);
+    void voxelizeDGtal(MyMesh *_mesh);
     void displayMesh(MyMesh *_mesh, bool isTemperatureMap = false, float mapRange = -1);
     void resetAllColorsAndThickness(MyMesh* _mesh);
 
 private slots:
+    void on_pushButton_voxeliser_clicked();
+    void on_action_RAW_triggered();
     void on_actionOuvrir_triggered();
 
-    void on_pushButton_clicked();
+    void on_actionQuitter_triggered();
 
 private:
+    const QIcon icon_open = QIcon(":/icons/open.png");
+    const QIcon icon_export = QIcon(":/icons/export.png");
+    const QIcon icon_quit = QIcon(":/icons/quit.png");
+    const QIcon icon_file_raw = QIcon(":/icons/file-raw.png");
 
     bool modevoisinage;
-
     MyMesh mesh;
-
     int vertexSelection;
     int edgeSelection;
     int faceSelection;

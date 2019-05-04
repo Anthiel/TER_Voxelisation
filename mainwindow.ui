@@ -14,12 +14,71 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QPushButton" name="pushButton">
-      <property name="text">
-       <string>Voxel</string>
+     <widget class="QWidget" name="widget_2" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+        <horstretch>150</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
+      <property name="minimumSize">
+       <size>
+        <width>150</width>
+        <height>0</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>4</number>
+       </property>
+       <property name="leftMargin">
+        <number>3</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>3</number>
+       </property>
+       <property name="bottomMargin">
+        <number>3</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="pushButton_voxeliser">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Voxéliser (DGtal)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="progressbar_voxeliser">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
@@ -40,22 +99,51 @@
     <property name="title">
      <string>Fichier</string>
     </property>
+    <widget class="QMenu" name="menuExporter">
+     <property name="title">
+      <string>Exporter</string>
+     </property>
+     <addaction name="action_RAW"/>
+     <addaction name="action_DV"/>
+     <addaction name="action_3D"/>
+     <addaction name="action_VOL"/>
+    </widget>
     <addaction name="actionOuvrir"/>
+    <addaction name="menuExporter"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuitter"/>
    </widget>
    <addaction name="menuFichier"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_RAW">
+   <property name="text">
+    <string>.RAW</string>
+   </property>
+  </action>
+  <action name="action_DV">
+   <property name="text">
+    <string>.DV</string>
+   </property>
+  </action>
+  <action name="action_3D">
+   <property name="text">
+    <string>.3D</string>
+   </property>
+  </action>
+  <action name="action_VOL">
+   <property name="text">
+    <string>.VOL</string>
+   </property>
+  </action>
   <action name="actionOuvrir">
    <property name="text">
-    <string>Ouvrir</string>
+    <string>Ouvrir... (Ctrl+O)</string>
+   </property>
+  </action>
+  <action name="actionQuitter">
+   <property name="text">
+    <string>Quitter (Ctrl+Q)</string>
    </property>
   </action>
  </widget>

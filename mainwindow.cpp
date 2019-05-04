@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
 #include <iostream>
 #include <DGtal/helpers/StdDefs.h>
 #include <DGtal/base/Common.h>
@@ -10,21 +9,55 @@
 #include <DGtal/io/boards/Board3D.h>
 #include <DGtal/io/writers/MeshWriter.h>
 
+#include <QDesktopWidget>
+#include <QMessageBox>
+
 using namespace std;
 using namespace DGtal;
 
-void MainWindow::voxel(MyMesh* _mesh){
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+{
+    vertexSelection = -1;
+    edgeSelection = -1;
+    faceSelection = -1;
+
+    modevoisinage = false;
+
+    ui->setupUi(this);
+    this->setWindowTitle("Projet TER - Voxélisation");
+    this->ui->progressbar_voxeliser->setVisible(false);
+
+    this->ui->actionOuvrir->setIcon(icon_open);
+    this->ui->menuExporter->setIcon(icon_export);
+    this->ui->actionQuitter->setIcon(icon_quit);
+    this->ui->action_RAW->setIcon(icon_file_raw);
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this, SLOT(on_actionOuvrir_triggered()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(on_actionQuitter_triggered()));
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+void MainWindow::voxelizeDGtal(MyMesh* _mesh){
 
     trace.beginBlock("Voxelizer");
     using namespace Z3i;
     Mesh<Point> aMesh;
 
+    this->ui->progressbar_voxeliser->setValue(10);
+
     for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
         VertexHandle current = *curVert;
         OpenMesh::Vec3f point = _mesh->point(current);
         aMesh.addVertex(Point(point[0], point[1], point[2]));
-        trace.info() << "Added vertex (" << point[0] << " " << point[1] << " " << point[2] << ")" << std::endl;
+        trace.info() << "Added vertex (" << (int) point[0] << " " << (int) point[1]  << " " << (int) point[2] << ")" << std::endl;
     }
+
+    this->ui->progressbar_voxeliser->setValue(40);
 
     for(MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++){
         FaceHandle current = *curFace;
@@ -35,48 +68,36 @@ void MainWindow::voxel(MyMesh* _mesh){
         }
         if(verticesIndex.size() == 3) {
             aMesh.addTriangularFace(verticesIndex[0], verticesIndex[1], verticesIndex[2]);
-            trace.info() << "Added face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
+            trace.info() << "Added triangular face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
+        } else if(verticesIndex.size() == 4) {
+            aMesh.addQuadFace(verticesIndex[0], verticesIndex[1], verticesIndex[2], verticesIndex[3]);
+            trace.info() << "Added quad face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << verticesIndex[3] << ")" << std::endl;
         }
     }
 
+    this->ui->progressbar_voxeliser->setValue(60);
+
     Domain domain(Point(0,0,0), Point(128, 128, 128));
     DigitalSet outputSet(domain);
-
     MeshVoxelizer<DigitalSet, 6> voxelizer;
     trace.info() << "Digitization..." << std::endl;
-    voxelizer.voxelize(outputSet, aMesh, 15.0 /* scaleFactor */);
+    voxelizer.voxelize(outputSet, aMesh, 1.0 /* scaleFactor */);
     trace.info()<< "Got " << outputSet.size() << " voxels." << std::endl;
+
+    this->ui->progressbar_voxeliser->setValue(90);
+
     Board3D<> board;
     for(auto voxel : outputSet)
       board << voxel;
     board.saveOBJ("voxelizedCube.obj");
     trace.endBlock();
 
+    this->ui->progressbar_voxeliser->setValue(100);
+
     // chargement du fichier .obj dans la variable globale "mesh"
     OpenMesh::IO::read_mesh(mesh, "voxelizedCube.obj");
     mesh.update_normals();
     resetAllColorsAndThickness(&mesh);
-    displayMesh(&mesh);
-}
-
-
-
-/* **** début de la partie boutons et IHM **** */
-void MainWindow::on_actionOuvrir_triggered()
-{
-    // fenêtre de sélection des fichiers
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
-
-    // chargement du fichier .obj dans la variable globale "mesh"
-    OpenMesh::IO::read_mesh(mesh, fileName.toUtf8().constData());
-
-    mesh.update_normals();
-
-    // initialisation des couleurs et épaisseurs (sommets et arêtes) du mesh
-    resetAllColorsAndThickness(&mesh);
-
-    voxel(&mesh);
-    // on affiche le maillage
     displayMesh(&mesh);
 }
 
@@ -121,7 +142,7 @@ void MainWindow::displayMesh(MyMesh* _mesh, bool isTemperatureMap, float mapRang
         {
             for (MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++)
                 values.append(fabs(_mesh->data(*curVert).value));
-            qSort(values);
+            std::sort(values.begin(), values.end());
             mapRange = values.at(values.size()*0.8);
             qDebug() << "mapRange" << mapRange;
         }
@@ -286,26 +307,60 @@ void MainWindow::displayMesh(MyMesh* _mesh, bool isTemperatureMap, float mapRang
     delete[] pointsVerts;
 }
 
-
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+void MainWindow::on_pushButton_voxeliser_clicked()
 {
-    vertexSelection = -1;
-    edgeSelection = -1;
-    faceSelection = -1;
+    this->ui->progressbar_voxeliser->setVisible(true);
+    voxelizeDGtal(&mesh);
+    this->ui->pushButton_voxeliser->setEnabled(false);
 
-    modevoisinage = false;
-
-    ui->setupUi(this);
 }
 
-MainWindow::~MainWindow()
+void MainWindow::on_action_RAW_triggered()
 {
-    delete ui;
+    QString fileName = QFileDialog::getSaveFileName(this, "Exporter en .raw", QDir::currentPath(), tr("RAW (*.raw)"));
+    qDebug() << fileName;
+    if(fileName.isEmpty()) {
+        QMessageBox::critical(this, tr("Erreur"), QString("Vous devez spécifier un nom de fichier!"));
+        return;
+    }
+
+    fileName += ".raw";
+
+    QFile file(fileName);
+    if(file.open(QIODevice::WriteOnly)){
+        QTextStream stream(&file);
+        for(MyMesh::FaceIter curFace = mesh.faces_begin(); curFace != mesh.faces_end(); curFace++){
+            FaceHandle current = *curFace;
+            for(MyMesh::FaceVertexIter curVert = mesh.fv_iter(current); curVert.is_valid(); curVert++){
+                VertexHandle currentVertex = *curVert;
+                OpenMesh::Vec3f point = mesh.point(currentVertex);
+                stream << point[0] << " " << point[1] << " " << point[2] << " ";
+            }
+            stream << "\n";
+        }
+    }
 }
 
-
-
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_actionOuvrir_triggered()
 {
-    voxel(&mesh);
+    // fenêtre de sélection des fichiers
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
+
+    // chargement du fichier .obj dans la variable globale "mesh"
+    OpenMesh::IO::read_mesh(mesh, fileName.toUtf8().constData());
+
+    mesh.update_normals();
+
+    // initialisation des couleurs et épaisseurs (sommets et arêtes) du mesh
+    resetAllColorsAndThickness(&mesh);
+    this->ui->pushButton_voxeliser->setEnabled(true);
+    this->ui->progressbar_voxeliser->setVisible(false);
+    this->ui->progressbar_voxeliser->setValue(0);
+    // on affiche le maillage
+    displayMesh(&mesh);
+}
+
+void MainWindow::on_actionQuitter_triggered()
+{
+    QApplication::quit();
 }
