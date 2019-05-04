@@ -68,9 +68,9 @@ void Space::CreateSpace()
              << " zMax :" << zMax << " zMin :" << zMin;
 
 
-    int haut = 3;
-    int lon = 3;
-    int lar = 3;
+    int haut = 8;
+    int lon = 8;
+    int lar = 8;
 
     vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
 
@@ -108,21 +108,19 @@ void Space::CreateSpace()
 
     qDebug() << "début boucle";
 
-    //for(int h = 0; h<haut ; h++){
-        for(int la = 0; la<lar ;la++){
-           for(int lo = 0; lo < lon ; lo++){
-               /*
+    for(int h = 0; h<haut; h++){
+        for(int la = 0; la < lar-1 ;la++){
+           for(int lo = 0; lo < lon-1 ; lo++){
+
                Etage = h*lar*lon;
                qDebug() << "Etage : " << Etage;
 
-               // haut et bas du rectangle
-               myfile << "f " << l + Etage<< " " << l+lar+Etage << " " << l+lar+1+Etage << "\n";
-               myfile << "f " << l + Etage<< " " << l+lar+1+Etage << " " << l+1+Etage << "\n";   */
+               myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
+               myfile << "f " << 2 + la + lo*lar + lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
 
-               myfile << "f " << 1 + la + lo*lar<< " " << 2 + la + lo*lar << " " << 1 + la + lo*lar + lar << "\n";
            }
         }
-    //}
+    }
         /*
     qDebug() << "deuxieme partie";
         for(int l = 1; l<lar ;l++){
