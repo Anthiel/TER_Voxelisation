@@ -26,7 +26,7 @@ void Space::InitXYZ()
 }
 
 vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
-
+/* Genere des points alignés dans un rectangle avec distance égale*/
     vector<OpenMesh::Vec3f> points;
     for(int ha = 0; ha<=haut; ha++){
         for(int lo = 0; lo<= lon; lo++){
@@ -68,89 +68,52 @@ void Space::CreateSpace()
              << " zMax :" << zMax << " zMin :" << zMin;
 
 
-    int haut = 8;
-    int lon = 8;
-    int lar = 8;
+    /*
+     * Precision du voxelisateur, nombre de cube présent en hauteur, Longueur et largeur
+     */
+    int haut = 15;
+    int lon = 15;
+    int lar = 15;
 
+    //génère les points avec des distances égales en hauteur, longueur et largeur
     vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
 
-    /*
-    OpenMesh::Vec3f point000 = {xMin,yMin,zMin};
-    OpenMesh::Vec3f pointinter = {xMin,(yMax+yMin)/2.0,zMin};
-    OpenMesh::Vec3f point010 = {xMin,yMax,zMin};
-    OpenMesh::Vec3f point110 = {xMax,yMax,zMin};
-    OpenMesh::Vec3f pointinter2 = {xMax,(yMax+yMin)/2.0,zMin};
-    OpenMesh::Vec3f point100 = {xMax,yMin,zMin};
-
-    OpenMesh::Vec3f pointz1 = {xMin,yMin,(zMax+zMin)/2.0};
-    OpenMesh::Vec3f pointz2 = {xMin,yMax,(zMax+zMin)/2.0};
-    OpenMesh::Vec3f pointz3 = {xMax,yMax,(zMax+zMin)/2.0};
-    OpenMesh::Vec3f pointz4 = {xMax,yMin,(zMax+zMin)/2.0};
-
-    OpenMesh::Vec3f point001 = {xMin,yMin,zMax};
-    OpenMesh::Vec3f point011 = {xMin,yMax,zMax};
-    OpenMesh::Vec3f point111 = {xMax,yMax,zMax};
-    OpenMesh::Vec3f point101 = {xMax,yMin,zMax};
-
-    qDebug() << "pointinter : " << (yMax-yMin)/2.0;
-
-    points = {point000, point010, point100 ,point110, pointz1, pointz2, pointz4, pointz3 ,point001, point011, point101, point111};
-*/
+    //création du fichier obj
     ofstream myfile;
     myfile.open ("example.obj");
 
+    //écriture de tous les vertices dans l'obj
     for(auto i : points){
         myfile << "v " << i << "\n";
     }
 
-    int Etage = 0;
-    int EtageSuivant = 0;
-
-    qDebug() << "début boucle";
+    //variable permettant de connaitre l'étage, et la distance qu'il y a entre chaque étage
+    int Etage = 0, EtageSuivant = 0;
 
     for(int h = 0; h<haut; h++){
-        for(int la = 0; la < lar-1 ;la++){
-           for(int lo = 0; lo < lon-1 ; lo++){
+        for(int la = 0; la < lar ;la++){
+           for(int lo = 0; lo < lon; lo++){
 
-               Etage = h*lar*lon;
-               qDebug() << "Etage : " << Etage;
+               EtageSuivant = lar*lon; //taille d'un étage
+               Etage = h*EtageSuivant;
 
-               myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-               myfile << "f " << 2 + la + lo*lar + lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-
+               //plan XZ
+               if(la<lar-1 && lo<lon-1){
+                   myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
+                   myfile << "f " << 2 + la + lo*lar + lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
+               }
+               // PLAN XY
+               if(h<haut-1 && lo<lon-1){
+                    myfile << "f " << 1 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
+                    myfile << "f " << 1 + la + lo*lar +Etage+EtageSuivant<< " " <<  1 + la + lo*lar + lar +Etage+EtageSuivant<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
+               }
+               // PLAN YZ
+               if(la<lar-1 && h<haut-1){
+                    myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< "\n";
+                    myfile << "f " << 2 + la + lo*lar +Etage+EtageSuivant<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< "\n";
+               }
            }
         }
     }
-        /*
-    qDebug() << "deuxieme partie";
-        for(int l = 1; l<lar ;l++){
-           for(int lo = 1; lo < lon ; lo++){
-
-              myfile << "f " << l << " " << l+lar << " " << l + (lar*lon) << "\n";
-              myfile << "f " << l + (lar*lon)+lar << " " << l+lar << " " << l + (lar*lon) << "\n";
-           }
-        }
-
-
-*/
-    /*
-    myfile << "f 1 2 3 \n";
-    myfile << "f 1 4 3 \n";
-
-    myfile << "f 1 2 6 \n";
-    myfile << "f 1 5 6 \n";
-
-    myfile << "f 5 6 7 \n";
-    myfile << "f 5 8 7 \n";
-
-    myfile << "f 4 3 7 \n";
-    myfile << "f 4 8 7 \n";
-
-    myfile << "f 1 4 8 \n";
-    myfile << "f 1 5 8 \n";
-
-    myfile << "f 2 6 7 \n";
-    myfile << "f 2 3 7 \n";*/
     myfile.close();
-
 }
