@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "Space.h"
+
 #include <iostream>
 #include <DGtal/helpers/StdDefs.h>
 #include <DGtal/base/Common.h>
@@ -54,7 +56,7 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
         VertexHandle current = *curVert;
         OpenMesh::Vec3f point = _mesh->point(current);
         aMesh.addVertex(Point(point[0], point[1], point[2]));
-        trace.info() << "Added vertex (" << (int) point[0] << " " << (int) point[1]  << " " << (int) point[2] << ")" << std::endl;
+        //trace.info() << "Added vertex (" << point[0] << " " << point[1] << " " << point[2] << ")" << std::endl;
     }
 
     this->ui->progressbar_voxeliser->setValue(40);
@@ -78,6 +80,7 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     this->ui->progressbar_voxeliser->setValue(60);
 
     Domain domain(Point(0,0,0), Point(128, 128, 128));
+
     DigitalSet outputSet(domain);
     MeshVoxelizer<DigitalSet, 6> voxelizer;
     trace.info() << "Digitization..." << std::endl;
@@ -98,6 +101,11 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     OpenMesh::IO::read_mesh(mesh, "voxelizedCube.obj");
     mesh.update_normals();
     resetAllColorsAndThickness(&mesh);
+    //voxel(&mesh);
+    Space world(&mesh);
+    world.CreateSpace();
+
+    // on affiche le maillage
     displayMesh(&mesh);
 }
 
