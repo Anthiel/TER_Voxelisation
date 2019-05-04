@@ -31,7 +31,8 @@ vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
     for(int ha = 0; ha<=haut; ha++){
         for(int lo = 0; lo<= lon; lo++){
             for(int la = 0; la<=lar; la++){
-                OpenMesh::Vec3f pointTMP = {xMin+(la/lar)*(xMax-xMin), yMin+(lo/lon)*(yMax-yMin), zMin+(ha/haut)*(zMax-zMin)};
+                qDebug() << "point : "<< (la/lar) << (lo/lon) << (ha/haut);
+                OpenMesh::Vec3f pointTMP = {xMin+(float(la)/float(lar))*(xMax-xMin), yMin+(float(lo)/float(lon))*(yMax-yMin), zMin+(float(ha)/float(haut))*(zMax-zMin)};
                 points.push_back(pointTMP);
             }
         }
@@ -107,18 +108,22 @@ void Space::CreateSpace()
 
     qDebug() << "début boucle";
 
-    for(int h = 0; h<haut ; h++){
-        for(int l = 1; l<lar ;l++){
-           for(int lo = 1; lo < lon ; lo++){
+    //for(int h = 0; h<haut ; h++){
+        for(int la = 0; la<lar ;la++){
+           for(int lo = 0; lo < lon ; lo++){
+               /*
                Etage = h*lar*lon;
                qDebug() << "Etage : " << Etage;
 
                // haut et bas du rectangle
                myfile << "f " << l + Etage<< " " << l+lar+Etage << " " << l+lar+1+Etage << "\n";
-               myfile << "f " << l + Etage<< " " << l+lar+1+Etage << " " << l+1+Etage << "\n";               
+               myfile << "f " << l + Etage<< " " << l+lar+1+Etage << " " << l+1+Etage << "\n";   */
+
+               myfile << "f " << 1 + la + lo*lar<< " " << 2 + la + lo*lar << " " << 1 + la + lo*lar + lar << "\n";
            }
         }
-    }/*
+    //}
+        /*
     qDebug() << "deuxieme partie";
         for(int l = 1; l<lar ;l++){
            for(int lo = 1; lo < lon ; lo++){
