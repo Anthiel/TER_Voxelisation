@@ -41,6 +41,7 @@ vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
 }
 
 void Space::ChangeSize(int la, int lo, int ha){
+/* permet de changer le nombre de voxel en hauteur, largeur et longueur*/
 
     largeur = la;
     hauteur = ha;
@@ -49,11 +50,13 @@ void Space::ChangeSize(int la, int lo, int ha){
 }
 
 int Space::coefficientVoxel(int index){
+/* renvoie la valeur qu'il faut rajouter à l'index du voxel pour avoir l'origine */
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
         qDebug() << "error : Space::coefficientVoxel : dépassement du nombre de voxel total";
         return -1;
     }
+
     int nbVoxelLargeur = largeur - 1;
     int coef = 0;
 
@@ -67,6 +70,7 @@ int Space::coefficientVoxel(int index){
 }
 
 int Space::hauteurVoxel(int index){
+    /*renvoie la hauteur dans la structure du voxel n°index*/
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
         qDebug() << "error : Space::hauteurVoxel : dépassement du nombre de voxel total";
@@ -80,6 +84,7 @@ int Space::hauteurVoxel(int index){
 }
 
 void Space::CreateCube(int index, ofstream &file){
+/* permet de dessiner le voxel à l'index choisie*/
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
         qDebug() << "error : Space::CreateCube : dépassement du nombre de voxel total";
@@ -97,6 +102,7 @@ void Space::CreateCube(int index, ofstream &file){
      * Beh = behind
      * Fro = front
     */
+
     //Etage 0 du voxel
     int vertexFroLeftBottom = voxelRDC + coefficientVoxel(voxelRDC) + (hauteurVoxel(index)*EtageSuivant);
     int vertexFroRightBottom = vertexFroLeftBottom + largeur;
@@ -109,7 +115,7 @@ void Space::CreateCube(int index, ofstream &file){
     int vertexBehLeftUp = vertexBehLeftBottom + EtageSuivant;
     int vertexBehRightUp = vertexBehRightBottom + EtageSuivant;
 
-    qDebug() << "écriture du fichier";
+    /* écriture des 6 faces du carré dans le fichier obj créé*/
     //face
     file << "f " << vertexFroLeftBottom << " " << vertexFroLeftUp << " " << vertexFroRightBottom << "\n";
     file << "f " << vertexFroRightUp << " " << vertexFroLeftUp << " " << vertexFroRightBottom << "\n";
