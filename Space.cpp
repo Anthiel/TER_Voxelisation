@@ -11,7 +11,7 @@ using namespace std;
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(14, 14, 15);
+    ChangeSize(10, 10, 10);
 }
 
 
@@ -24,6 +24,64 @@ void Space::InitXYZ()
     xMax = initPoint[0], xMin = initPoint[0];
     yMax = initPoint[1], yMin = initPoint[1];
     zMax = initPoint[2], zMin = initPoint[2];
+}
+
+int Space::BiggestCoord(float c1, float c2, float c3){
+    /* renvoie l'indice de la plus grande valeur */
+
+    if(c1 >= c2 && c1 >= c3){
+        return 1;
+    }
+    if(c2 >= c3 && c2 >= c1){
+        return 2;
+    }
+    if(c3 >= c1 && c3 >= c2){
+        return 2;
+    }
+    return 0;
+}
+
+void Space::BuildCubeCoord(){
+/* transforme le Space en cube */
+
+    float Cx = xMax - xMin;
+    float Cy = yMax - yMin;
+    float Cz = zMax - zMin;
+
+    int result = BiggestCoord(Cx, Cy, Cz);
+    if(result ==0){
+        qDebug() << "error : BuildCubeCoord : mauvaise valeur renvoyé";
+    }
+    else if(result == 1){
+        float Dxy = Cx-Cy;
+        yMax = yMax + Dxy/2.0;
+        yMin = yMin - Dxy/2.0;
+        float Dxz = Cx-Cz;
+        zMax = zMax + Dxz/2.0;
+        zMin = zMin - Dxz/2.0;
+    }
+    else if(result == 2){
+        float Dyx = Cy-Cx;
+        xMax = xMax + Dyx/2.0;
+        xMin = xMin - Dyx/2.0;
+        float Dyz = Cy-Cz;
+        zMax = zMax + Dyz/2.0;
+        zMin = zMin - Dyz/2.0;
+    }
+    else if(result == 3){
+        float Dzx = Cz-Cx;
+        xMax = xMax + Dzx/2.0;
+        xMin = xMin - Dzx/2.0;
+        float Dzy = Cz-Cz;
+        yMax = yMax + Dzy/2.0;
+        yMin = yMin - Dzy/2.0;
+    }
+    Cx = xMax - xMin;
+    Cy = yMax - yMin;
+    Cz = zMax - zMin;
+    qDebug() << "longueur : " << float(Cx);
+    qDebug() << "largeur : " << float(Cz);
+    qDebug() << "hauteur : " << float(Cy);
 }
 
 vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
@@ -47,6 +105,14 @@ void Space::ChangeSize(int la, int lo, int ha){
     hauteur = ha;
     longueur = lo;
     nbVoxel = (la-1)*(ha-1)*(lo-1);
+}
+void Space::ChangeSize(int nb){
+/* permet de changer le nombre de voxel en hauteur, largeur et longueur*/
+
+    largeur = nb;
+    hauteur = nb;
+    longueur = nb;
+    nbVoxel = (nb-1)*(nb-1)*(nb-1);
 }
 
 int Space::coefficientVoxel(int index){
@@ -96,6 +162,7 @@ void Space::CreateCube(int index, ofstream &file){
     int nbVoxelLongueur = longueur-1;
     int nbVoxelParEtage = nbVoxelLargeur * nbVoxelLongueur;
 
+    //sur une pile de voxel, voxelRDC est l'index du voxel le plus bas de la pile
     int voxelRDC = index - hauteurVoxel(index)*nbVoxelParEtage;
 
     /*
@@ -165,6 +232,10 @@ void Space::CreateSpace()
     qDebug() << "valeur de xMax :" << xMax << " xMin :" << xMin << " yMax :" << yMax << " yMin :" << yMin
              << " zMax :" << zMax << " zMin :" << zMin;
 
+    /*
+     * Créer le space carré, pour avoir des voxels cubiques
+     */
+    BuildCubeCoord();
 
     /*
      * Precision du voxelisateur, nombre de cube présent en hauteur, Longueur et largeur
@@ -185,13 +256,13 @@ void Space::CreateSpace()
         myfile << "v " << i << "\n";
     }
 
-    CreateCube(2, myfile);
-    CreateCube(8, myfile);
-    CreateCube(14, myfile);
-    CreateCube(23, myfile);
-    CreateCube(32, myfile);
-    CreateCube(41, myfile);
-    CreateCube(100, myfile);
+    CreateCube(1, myfile);
+    CreateCube(101, myfile);
+    CreateCube(250, myfile);
+    CreateCube(36, myfile);
+    CreateCube(412, myfile);
+    CreateCube(378, myfile);
+
     /*
     //variable permettant de connaitre l'étage, et la distance qu'il y a entre chaque étage
     int Etage = 0, EtageSuivant = 0;

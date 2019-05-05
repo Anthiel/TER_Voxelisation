@@ -18,7 +18,13 @@ public:
     Space(MyMesh* _mesh);
     void CreateSpace();
     void InitXYZ();
+    void BuildCubeCoord();
+
+    int BiggestCoord(float c1, float c2, float c3);
+
     void ChangeSize(int la, int lo, int ha);
+    void ChangeSize(int nb);
+
     int coefficientVoxel(int index);
     int hauteurVoxel(int index);
 
