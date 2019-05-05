@@ -11,6 +11,7 @@ using namespace std;
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
+    ChangeSize(14, 14, 15);
 }
 
 
@@ -31,14 +32,105 @@ vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
     for(int ha = 0; ha<=haut; ha++){
         for(int lo = 0; lo<= lon; lo++){
             for(int la = 0; la<=lar; la++){
-                qDebug() << "point : "<< (la/lar) << (lo/lon) << (ha/haut);
-                OpenMesh::Vec3f pointTMP = {xMin+(float(la)/float(lar))*(xMax-xMin), yMin+(float(lo)/float(lon))*(yMax-yMin), zMin+(float(ha)/float(haut))*(zMax-zMin)};
+                OpenMesh::Vec3f pointTMP = {xMin+(float(la)/float(lar))*(xMax-xMin), zMin+(float(ha)/float(haut))*(zMax-zMin), yMin+(float(lo)/float(lon))*(yMax-yMin)};
                 points.push_back(pointTMP);
             }
         }
     }
     return points;
 }
+
+void Space::ChangeSize(int la, int lo, int ha){
+
+    largeur = la;
+    hauteur = ha;
+    longueur = lo;
+    nbVoxel = (la-1)*(ha-1)*(lo-1);
+}
+
+int Space::coefficientVoxel(int index){
+
+    if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
+        qDebug() << "error : Space::coefficientVoxel : dépassement du nombre de voxel total";
+        return -1;
+    }
+    int nbVoxelLargeur = largeur - 1;
+    int coef = 0;
+
+    for(int i=0; i<index;i++){
+        if((index-i)%nbVoxelLargeur == 1){
+            coef = index-1;
+            break;
+        }
+    }
+    return coef/nbVoxelLargeur;
+}
+
+int Space::hauteurVoxel(int index){
+
+    if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
+        qDebug() << "error : Space::hauteurVoxel : dépassement du nombre de voxel total";
+        return -1;
+    }
+
+    int nbVoxelLargeur = largeur-1;
+    int nbVoxelLongueur = longueur-1;
+    int nbVoxelParEtage = nbVoxelLargeur * nbVoxelLongueur;
+    return (index-1)/nbVoxelParEtage;
+}
+
+void Space::CreateCube(int index, ofstream &file){
+
+    if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
+        qDebug() << "error : Space::CreateCube : dépassement du nombre de voxel total";
+        return;
+    }
+
+    int EtageSuivant = longueur*largeur;
+    int nbVoxelLargeur = largeur-1;
+    int nbVoxelLongueur = longueur-1;
+    int nbVoxelParEtage = nbVoxelLargeur * nbVoxelLongueur;
+
+    int voxelRDC = index - hauteurVoxel(index)*nbVoxelParEtage;
+
+    /*
+     * Beh = behind
+     * Fro = front
+    */
+    //Etage 0 du voxel
+    int vertexFroLeftBottom = voxelRDC + coefficientVoxel(voxelRDC) + (hauteurVoxel(index)*EtageSuivant);
+    int vertexFroRightBottom = vertexFroLeftBottom + largeur;
+    int vertexBehLeftBottom = vertexFroLeftBottom + 1;
+    int vertexBehRightBottom = vertexBehLeftBottom + largeur;
+
+    //Etage 1 du voxel
+    int vertexFroLeftUp = vertexFroLeftBottom + EtageSuivant;
+    int vertexFroRightUp = vertexFroRightBottom + EtageSuivant;
+    int vertexBehLeftUp = vertexBehLeftBottom + EtageSuivant;
+    int vertexBehRightUp = vertexBehRightBottom + EtageSuivant;
+
+    qDebug() << "écriture du fichier";
+    //face
+    file << "f " << vertexFroLeftBottom << " " << vertexFroLeftUp << " " << vertexFroRightBottom << "\n";
+    file << "f " << vertexFroRightUp << " " << vertexFroLeftUp << " " << vertexFroRightBottom << "\n";
+    //derrière
+    file << "f " << vertexBehLeftBottom << " " << vertexBehLeftUp << " " << vertexBehRightBottom << "\n";
+    file << "f " << vertexBehRightUp << " " << vertexBehLeftUp << " " << vertexBehRightBottom << "\n";
+    //haut
+    file << "f " << vertexFroLeftUp << " " << vertexBehLeftUp << " " << vertexFroRightUp << "\n";
+    file << "f " << vertexBehRightUp << " " << vertexBehLeftUp << " " << vertexFroRightUp << "\n";
+    //bas
+    file << "f " << vertexFroLeftBottom << " " << vertexBehLeftBottom << " " << vertexFroRightBottom << "\n";
+    file << "f " << vertexBehRightBottom << " " << vertexBehLeftBottom << " " << vertexFroRightBottom << "\n";
+    //gauche
+    file << "f " << vertexBehLeftUp << " " << vertexFroLeftUp << " " << vertexFroLeftBottom << "\n";
+    file << "f " << vertexBehLeftUp << " " << vertexBehLeftBottom << " " << vertexFroLeftBottom << "\n";
+    //droite
+    file << "f " << vertexBehRightUp << " " << vertexFroRightUp << " " << vertexFroRightBottom << "\n";
+    file << "f " << vertexBehRightUp << " " << vertexBehRightBottom << " " << vertexFroRightBottom << "\n";
+}
+
+
 
 void Space::CreateSpace()
 /*Créer l'obj permettant de voir le quadrillage*/
@@ -71,9 +163,9 @@ void Space::CreateSpace()
     /*
      * Precision du voxelisateur, nombre de cube présent en hauteur, Longueur et largeur
      */
-    int haut = 15;
-    int lon = 15;
-    int lar = 15;
+    int haut = hauteur;
+    int lon = longueur;
+    int lar = largeur;
 
     //génère les points avec des distances égales en hauteur, longueur et largeur
     vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
@@ -87,6 +179,14 @@ void Space::CreateSpace()
         myfile << "v " << i << "\n";
     }
 
+    CreateCube(2, myfile);
+    CreateCube(8, myfile);
+    CreateCube(14, myfile);
+    CreateCube(23, myfile);
+    CreateCube(32, myfile);
+    CreateCube(41, myfile);
+    CreateCube(100, myfile);
+    /*
     //variable permettant de connaitre l'étage, et la distance qu'il y a entre chaque étage
     int Etage = 0, EtageSuivant = 0;
 
@@ -114,6 +214,8 @@ void Space::CreateSpace()
                }
            }
         }
-    }
+    }*/
     myfile.close();
+
+
 }

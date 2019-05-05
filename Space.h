@@ -18,6 +18,13 @@ public:
     Space(MyMesh* _mesh);
     void CreateSpace();
     void InitXYZ();
+    void ChangeSize(int la, int lo, int ha);
+    int coefficientVoxel(int index);
+    int hauteurVoxel(int index);
+
+    void CreateCube(int index, ofstream &file);
+
+
     std::vector<OpenMesh::Vec3f> GenerePoints(int haut, int lon, int lar);
 
 
@@ -28,9 +35,10 @@ public:
     float yMax, yMin;
     float zMax, zMin;
 
-    float largeur;
-    float hauteur;
-    float longueur;
+    int largeur; // nombre de voxel en largeur
+    int hauteur; // nombre de voxel en hauteur
+    int longueur; // nombre de voxel en longueur
+    int nbVoxel;
 
     float Lvoxel; // largeur d'un voxel
 };
