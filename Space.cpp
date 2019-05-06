@@ -11,7 +11,7 @@ using namespace std;
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(10, 10, 10);
+    ChangeSize(30, 30, 30);
 }
 
 
@@ -149,11 +149,57 @@ int Space::hauteurVoxel(int index){
     return (index-1)/nbVoxelParEtage;
 }
 
+
+void Space::VoxelisationVertice(std::vector<int> &v){
+    // parcours de tous les sommets
+    int lar = largeur - 1;
+    int lon = longueur - 1;
+    int haut = hauteur - 1;
+
+    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
+        VertexHandle current = *curVert;
+        OpenMesh::Vec3f point = _mesh->point(current);
+        float x = point[0], y = point[1], z = point[2];
+        int currentLa = 0, currentLon = 0, currentHau = 0;
+
+        for(int la = 0; la < lar; la++){
+            float p = xMin+(float(la)/float(lar))*(xMax-xMin);
+            float p1 = xMin+(float(la+1)/float(lar))*(xMax-xMin);
+            if(p <= x && x <= p1){
+                 currentLa = la;
+                 break;
+            }
+        }
+        for(int lo = 0; lo < lon; lo++){
+            float p = yMin+(float(lo)/float(lon))*(yMax-yMin);
+            float p1 = yMin+(float(lo+1)/float(lon))*(yMax-yMin);
+            if(p <= y && y <= p1){
+                 currentLon = lo;
+                 break;
+            }
+        }
+        for(int ha = 0; ha < haut; ha++){
+            float p = zMin+(float(ha)/float(haut))*(zMax-zMin);
+            float p1 = zMin+(float(ha+1)/float(haut))*(zMax-zMin);
+            if(p <= z && z <= p1){
+                 currentHau = ha;
+                 break;
+            }
+        }
+
+        int Etage = lon * lar;
+        int voxelID = currentLa + currentLon*lar+Etage*currentHau + 1;
+        v.push_back(voxelID);
+    }
+}
+
+
+
 void Space::CreateCube(int index, ofstream &file){
 /* permet de dessiner le voxel à l'index choisie*/
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
-        qDebug() << "error : Space::CreateCube : dépassement du nombre de voxel total";
+        qDebug() << "error : Space::CreateCube : dépassement du nombre de voxel total, index : " << index << "pour un maximum de : " << (longueur-1)*(hauteur-1)*(largeur-1);
         return;
     }
 
@@ -203,6 +249,15 @@ void Space::CreateCube(int index, ofstream &file){
     file << "f " << vertexBehRightUp << " " << vertexBehRightBottom << " " << vertexFroRightBottom << "\n";
 }
 
+void Space::DeleteDuplicate(std::vector<int> &v){
+    sort(v.begin(), v.end());
+    v.erase(unique(v.begin(), v.end() ), v.end());
+}
+
+void Space::CreateAllVoxel(ofstream &file){
+    for(auto i : activatedVoxel)
+        CreateCube(i, file);
+}
 
 
 void Space::CreateSpace()
@@ -232,14 +287,10 @@ void Space::CreateSpace()
     qDebug() << "valeur de xMax :" << xMax << " xMin :" << xMin << " yMax :" << yMax << " yMin :" << yMin
              << " zMax :" << zMax << " zMin :" << zMin;
 
-    /*
-     * Créer le space carré, pour avoir des voxels cubiques
-     */
+    // Créer le space carré, pour avoir des voxels cubiques
     BuildCubeCoord();
 
-    /*
-     * Precision du voxelisateur, nombre de cube présent en hauteur, Longueur et largeur
-     */
+    // Precision du voxelisateur, nombre de cube présent en hauteur, Longueur et largeur
     int haut = hauteur;
     int lon = longueur;
     int lar = largeur;
@@ -256,12 +307,14 @@ void Space::CreateSpace()
         myfile << "v " << i << "\n";
     }
 
-    CreateCube(1, myfile);
-    CreateCube(101, myfile);
-    CreateCube(250, myfile);
-    CreateCube(36, myfile);
-    CreateCube(412, myfile);
-    CreateCube(378, myfile);
+    //Voxelisation avec les vertices
+    VoxelisationVertice(activatedVoxel);
+
+    //supprime les valeurs doubles
+    DeleteDuplicate(activatedVoxel);
+
+    //Dessine les voxels activés
+    CreateAllVoxel(myfile);
 
     /*
     //variable permettant de connaitre l'étage, et la distance qu'il y a entre chaque étage

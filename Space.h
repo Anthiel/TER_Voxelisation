@@ -28,7 +28,14 @@ public:
     int coefficientVoxel(int index);
     int hauteurVoxel(int index);
 
+    void VoxelisationVertice(std::vector<int> &v);
+
+    void CreateAllVoxel(ofstream &file);
+    void DeleteDuplicate(std::vector<int> &v);
+
+
     void CreateCube(int index, ofstream &file);
+
 
 
     std::vector<OpenMesh::Vec3f> GenerePoints(int haut, int lon, int lar);
@@ -45,6 +52,8 @@ public:
     int hauteur; // nombre de voxel en hauteur
     int longueur; // nombre de voxel en longueur
     int nbVoxel;
+
+    std::vector<int> activatedVoxel;
 
     float Lvoxel; // largeur d'un voxel
 };
