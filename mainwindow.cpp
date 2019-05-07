@@ -332,18 +332,12 @@ void MainWindow::on_action_VOL_triggered()
 
     fileName += ".obj";
 
-    if(QFile::exists(fileName)){
-        system(qPrintable("obj2off " + fileName + " > " + path + "/file.off"));
-        system(qPrintable("mesh2vol -i " + path + "/file.off --resolution 256 -o " + newFileName + ".vol"));
-        system(qPrintable("rm " + path + "/file.off"));
-    }
-    else{
-        system(qPrintable("obj2off " + currentfileName + " > " + path + "/file.off"));
-        system(qPrintable("mesh2vol -i " + path + "/file.off --resolution 256 -o " + newFileName + ".vol"));
-        system(qPrintable("rm " + path + "/file.off"));
-    }
+    system(qPrintable("obj2off " + currentfileName + " > " + path + "/file.off"));
+    system(qPrintable("mesh2vol -i " + path + "/file.off --resolution 256 -o " + newFileName + ".vol"));
+    system(qPrintable("rm " + path + "/file.off"));
 
-    qDebug() << ".vol export done \n";
+
+    qDebug() << ".vol Export done \n";
 }
 
 void MainWindow::on_actionOuvrir_triggered()
