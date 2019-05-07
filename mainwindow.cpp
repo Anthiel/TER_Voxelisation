@@ -311,13 +311,48 @@ void MainWindow::on_action_RAW_triggered()
         }
     }
 }
+
+void MainWindow::on_action_VOL_triggered()
+{
+    QString path = QDir::currentPath();
+    qDebug() << path;
+
+    QString fileName = QFileDialog::getSaveFileName(this, "Exporter en .vol", QDir::currentPath(), tr("VOL (*.vol)"));
+    qDebug() << "1 " << fileName;
+    if(fileName.isEmpty()) {
+        QMessageBox::critical(this, tr("Erreur"), QString("Vous devez spécifier un nom de fichier!"));
+        return;
+    }
+
+    fileName.remove(".vol");
+    qDebug() << "3 " << fileName;
+
+    QString newFileName = fileName;
+    qDebug() << "4 " << newFileName;
+
+    fileName += ".obj";
+
+    if(QFile::exists(fileName)){
+        system(qPrintable("obj2off " + fileName + " > " + path + "/file.off"));
+        system(qPrintable("mesh2vol -i " + path + "/file.off --resolution 256 -o " + newFileName + ".vol"));
+        system(qPrintable("rm " + path + "/file.off"));
+    }
+    else{
+        system(qPrintable("obj2off " + currentfileName + " > " + path + "/file.off"));
+        system(qPrintable("mesh2vol -i " + path + "/file.off --resolution 256 -o " + newFileName + ".vol"));
+        system(qPrintable("rm " + path + "/file.off"));
+    }
+
+    qDebug() << ".vol export done \n";
+}
+
 void MainWindow::on_actionOuvrir_triggered()
 {
     // fenêtre de sélection des fichiers
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
-
+    currentfileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
+    qDebug() << currentfileName;
     // chargement du fichier .obj dans la variable globale "mesh"
-    OpenMesh::IO::read_mesh(mesh, fileName.toUtf8().constData());
+    OpenMesh::IO::read_mesh(mesh, currentfileName.toUtf8().constData());
 
     mesh.update_normals();
 
@@ -355,3 +390,4 @@ void MainWindow::on_AccuracySlider_valueChanged(int value)
 {
     this->ui->AccuracyValueLabel->setText(QString::number(value));
 }
+

@@ -63,6 +63,8 @@ private slots:
 
     void on_AccuracySlider_valueChanged(int value);
 
+    void on_action_VOL_triggered();
+
 private:
     const QIcon icon_open = QIcon(":/icons/open.png");
     const QIcon icon_export = QIcon(":/icons/export.png");
@@ -74,6 +76,8 @@ private:
     int vertexSelection;
     int edgeSelection;
     int faceSelection;
+
+    QString currentfileName;
 
     Ui::MainWindow *ui;
 };
