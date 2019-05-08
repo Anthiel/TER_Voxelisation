@@ -76,8 +76,6 @@ private:
     int edgeSelection;
     int faceSelection;
 
-    QString currentfileName;
-
     Ui::MainWindow *ui;
 };
 

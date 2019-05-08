@@ -310,43 +310,37 @@ void MainWindow::on_action_RAW_triggered()
             }
             stream << "\n";
         }
+        file.close();
     }
+    this->ui->statusBar->showMessage("Exportation en \".RAW\" réussie !");
 }
 void MainWindow::on_action_VOL_triggered()
 {
     QString path = QDir::currentPath();
-    qDebug() << path;
 
     QString fileName = QFileDialog::getSaveFileName(this, "Exporter en .vol", QDir::currentPath(), tr("VOL (*.vol)"));
-    qDebug() << "1 " << fileName;
     if(fileName.isEmpty()) {
         QMessageBox::critical(this, tr("Erreur"), QString("Vous devez spécifier un nom de fichier!"));
         return;
     }
 
-    fileName.remove(".vol");
-    qDebug() << "3 " << fileName;
+    fileName += ".vol";
+    QString tempFileName = fileName;
+    tempFileName.remove(".vol") += ".off";
+    OpenMesh::IO::write_mesh(mesh, tempFileName.toUtf8().constData());
 
-    QString newFileName = fileName;
-    qDebug() << "4 " << newFileName;
-
-    fileName += ".obj";
-
-    system(qPrintable("obj2off " + currentfileName + " > " + path + "/file.off"));
-    system(qPrintable("mesh2vol -i " + path + "/file.off --resolution 256 -o " + newFileName + ".vol"));
-    system(qPrintable("rm " + path + "/file.off"));
-
-
-    qDebug() << ".vol Export done \n";
+    system(qPrintable("mesh2vol -i " + tempFileName + " --resolution 256 -o " + fileName));
+    system(qPrintable("rm " + tempFileName));
+    this->ui->statusBar->showMessage("Exportation en \".VOL\" réussie !");
 }
 
 void MainWindow::on_actionOuvrir_triggered()
 {
     // fenêtre de sélection des fichiers
-    currentfileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
-    qDebug() << currentfileName;
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
+
     // chargement du fichier .obj dans la variable globale "mesh"
-    OpenMesh::IO::read_mesh(mesh, currentfileName.toUtf8().constData());
+    OpenMesh::IO::read_mesh(mesh, fileName.toUtf8().constData());
 
     mesh.update_normals();
 
