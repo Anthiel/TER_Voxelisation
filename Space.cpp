@@ -242,6 +242,10 @@ void Space::VoxelisationEdge(std::vector<int> &v){
         v.push_back(Voxel1);
         v.push_back(Voxel2);
 
+        OpenMesh::Vec3f V1coord = GetVoxelCoord(Voxel1);
+        OpenMesh::Vec3f V2coord = GetVoxelCoord(Voxel2);
+        OpenMesh::Vec3f V2moyenne = {(V1coord[0]+V2coord[0])/2, (V1coord[1]+V2coord[1])/2, (V1coord[2]+V2coord[2])/2};
+
 
     }
 
