@@ -198,10 +198,8 @@ OpenMesh::Vec3f Space::GetVoxelCoord(int VoxelID){
     int lon = (v-1) / larg + 1;
     v = v - ((lon-1)*larg);
     int lar = v;
-    qDebug() << "valeur pour voxelID : " << VoxelID << lon << lar << h;
     OpenMesh::Vec3f point = {lon,lar,h};
     return point;
-
 }
 
 int Space::getVoxelIndex(int lo, int lar, int hau){
