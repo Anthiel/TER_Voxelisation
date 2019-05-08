@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(30, 30, 30);
+    ChangeSize(30+1, 30+1, 30+1); // 30 voxels de large
 }
 
 
@@ -85,7 +85,7 @@ std::vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
     for(int ha = 0; ha<=haut; ha++){
         for(int lo = 0; lo<= lon; lo++){
             for(int la = 0; la<=lar; la++){
-                OpenMesh::Vec3f pointTMP = {xMin+(float(la)/float(lar))*(xMax-xMin), zMin+(float(ha)/float(haut))*(zMax-zMin), yMin+(float(lo)/float(lon))*(yMax-yMin)};
+                OpenMesh::Vec3f pointTMP = {xMin+(float(la)/float(lar))*(xMax-xMin), yMin+(float(lo)/float(lon))*(yMax-yMin), zMin+(float(ha)/float(haut))*(zMax-zMin)};
                 points.push_back(pointTMP);
             }
         }
@@ -145,49 +145,109 @@ int Space::hauteurVoxel(int index){
 }
 
 
-void Space::VoxelisationVertice(std::vector<int> &v){
-    // parcours de tous les sommets
+int Space::getVoxelIndex(int VertexID){
+
     int lar = largeur - 1;
     int lon = longueur - 1;
     int haut = hauteur - 1;
 
+    VertexHandle current = _mesh->vertex_handle(VertexID);
+    OpenMesh::Vec3f point = _mesh->point(current);
+    float x = point[0], y = point[1], z = point[2];
+    int currentLa = 0, currentLon = 0, currentHau = 0;
+
+    for(int la = 0; la < lar; la++){
+        float p = xMin+(float(la)/float(lar))*(xMax-xMin);
+        float p1 = xMin+(float(la+1)/float(lar))*(xMax-xMin);
+        if(p <= x && x <= p1){
+             currentLa = la;
+             break;
+        }
+    }
+    for(int lo = 0; lo < lon; lo++){
+        float p = yMin+(float(lo)/float(lon))*(yMax-yMin);
+        float p1 = yMin+(float(lo+1)/float(lon))*(yMax-yMin);
+        if(p <= y && y <= p1){
+             currentLon = lo;
+             break;
+        }
+    }
+    for(int ha = 0; ha < haut; ha++){
+        float p = zMin+(float(ha)/float(haut))*(zMax-zMin);
+        float p1 = zMin+(float(ha+1)/float(haut))*(zMax-zMin);
+        if(p <= z && z <= p1){
+             currentHau = ha;
+             break;
+        }
+    }
+
+    int Etage = lon * lar;
+    return currentLa + currentLon*lar+Etage*currentHau + 1;
+}
+
+OpenMesh::Vec3f Space::GetVoxelCoord(int VoxelID){
+    int larg = largeur - 1;
+    int longu = longueur - 1;
+    int haut = hauteur - 1;
+    int Etage = longu * larg;
+
+    int v = VoxelID;
+
+    int h = (v-1)/Etage + 1 ;
+    v = v - ((h-1) * Etage);
+    int lon = (v-1) / larg + 1;
+    v = v - ((lon-1)*larg);
+    int lar = v;
+    qDebug() << "valeur pour voxelID : " << VoxelID << lon << lar << h;
+    OpenMesh::Vec3f point = {lon,lar,h};
+    return point;
+
+}
+
+int Space::getVoxelIndex(int lo, int lar, int hau){
+    int larg = largeur - 1;
+    int longu = longueur - 1;
+    int haut = hauteur - 1;
+    int Etage = longu * larg;
+
+    return (lar+(lo-1)*(larg)+Etage*(hau-1));
+}
+
+
+void Space::VoxelisationVertice(std::vector<int> &v){
+
+    // parcours de tous les sommets
     for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
+
         VertexHandle current = *curVert;
-        OpenMesh::Vec3f point = _mesh->point(current);
-        float x = point[0], y = point[1], z = point[2];
-        int currentLa = 0, currentLon = 0, currentHau = 0;
-
-        for(int la = 0; la < lar; la++){
-            float p = xMin+(float(la)/float(lar))*(xMax-xMin);
-            float p1 = xMin+(float(la+1)/float(lar))*(xMax-xMin);
-            if(p <= x && x <= p1){
-                 currentLa = la;
-                 break;
-            }
-        }
-        for(int lo = 0; lo < lon; lo++){
-            float p = yMin+(float(lo)/float(lon))*(yMax-yMin);
-            float p1 = yMin+(float(lo+1)/float(lon))*(yMax-yMin);
-            if(p <= y && y <= p1){
-                 currentLon = lo;
-                 break;
-            }
-        }
-        for(int ha = 0; ha < haut; ha++){
-            float p = zMin+(float(ha)/float(haut))*(zMax-zMin);
-            float p1 = zMin+(float(ha+1)/float(haut))*(zMax-zMin);
-            if(p <= z && z <= p1){
-                 currentHau = ha;
-                 break;
-            }
-        }
-
-        int Etage = lon * lar;
-        int voxelID = currentLa + currentLon*lar+Etage*currentHau + 1;
+        int voxelID = getVoxelIndex(current.idx());
         v.push_back(voxelID);
     }
 }
 
+
+void Space::VoxelisationEdge(std::vector<int> &v){
+    // parcours de toutes les arêtes
+    int lar = largeur - 1;
+    int lon = longueur - 1;
+    int haut = hauteur - 1;
+
+    // parcours des arêtes
+    for (MyMesh::EdgeIter curEdge = _mesh->edges_begin(); curEdge != _mesh->edges_end(); curEdge++)
+    {
+        EdgeHandle eh = *curEdge;
+        VertexHandle S1 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 0));
+        VertexHandle S2 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 1));
+
+        int Voxel1 = getVoxelIndex(S1.idx());
+        int Voxel2 = getVoxelIndex(S2.idx());
+        v.push_back(Voxel1);
+        v.push_back(Voxel2);
+
+
+    }
+
+}
 
 
 void Space::CreateCube(int index, std::ofstream &file){

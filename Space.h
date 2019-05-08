@@ -29,7 +29,13 @@ public:
     int coefficientVoxel(int index);
     int hauteurVoxel(int index);
 
+    OpenMesh::Vec3f GetVoxelCoord(int VoxelID);
+    int getVoxelIndex(int VertexID);
+    int getVoxelIndex(int lo, int lar, int hau);
+
+
     void VoxelisationVertice(std::vector<int> &v);
+    void VoxelisationEdge(std::vector<int> &v);
 
     void CreateAllVoxel(std::ofstream &file);
     void DeleteDuplicate(std::vector<int> &v);
