@@ -1,10 +1,5 @@
 #include "Space.h"
 #include <QDebug>
-#include <iostream>
-#include <fstream>
-
-using namespace std;
-
 
 /* Zone imaginaire permettant de représenter une grille 3D */
 
@@ -84,9 +79,9 @@ void Space::BuildCubeCoord(){
     qDebug() << "hauteur : " << float(Cy);
 }
 
-vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
+std::vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
 /* Genere des points alignés dans un rectangle avec distance égale*/
-    vector<OpenMesh::Vec3f> points;
+    std::vector<OpenMesh::Vec3f> points;
     for(int ha = 0; ha<=haut; ha++){
         for(int lo = 0; lo<= lon; lo++){
             for(int la = 0; la<=lar; la++){
@@ -195,7 +190,7 @@ void Space::VoxelisationVertice(std::vector<int> &v){
 
 
 
-void Space::CreateCube(int index, ofstream &file){
+void Space::CreateCube(int index, std::ofstream &file){
 /* permet de dessiner le voxel à l'index choisie*/
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
@@ -254,7 +249,7 @@ void Space::DeleteDuplicate(std::vector<int> &v){
     v.erase(unique(v.begin(), v.end() ), v.end());
 }
 
-void Space::CreateAllVoxel(ofstream &file){
+void Space::CreateAllVoxel(std::ofstream &file){
     for(auto i : activatedVoxel)
         CreateCube(i, file);
 }
@@ -296,10 +291,10 @@ void Space::CreateSpace()
     int lar = largeur;
 
     //génère les points avec des distances égales en hauteur, longueur et largeur
-    vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
+    std::vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
 
     //création du fichier obj
-    ofstream myfile;
+    std::ofstream myfile;
     myfile.open ("example.obj");
 
     //écriture de tous les vertices dans l'obj

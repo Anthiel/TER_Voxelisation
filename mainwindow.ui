@@ -167,8 +167,6 @@
       <string>Exporter</string>
      </property>
      <addaction name="action_RAW"/>
-     <addaction name="action_DV"/>
-     <addaction name="action_3D"/>
      <addaction name="action_VOL"/>
     </widget>
     <addaction name="actionOuvrir"/>

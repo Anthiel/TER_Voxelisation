@@ -57,19 +57,18 @@ private slots:
     void on_action_RAW_triggered();
     void on_actionOuvrir_triggered();
     void on_actionQuitter_triggered();
+    void on_action_VOL_triggered();
 
     void on_DGtalButton_clicked();
     void on_PtalButton_clicked();
 
     void on_AccuracySlider_valueChanged(int value);
-
-    void on_action_VOL_triggered();
-
 private:
     const QIcon icon_open = QIcon(":/icons/open.png");
     const QIcon icon_export = QIcon(":/icons/export.png");
     const QIcon icon_quit = QIcon(":/icons/quit.png");
     const QIcon icon_file_raw = QIcon(":/icons/file-raw.png");
+    const QIcon icon_file_vol = QIcon(":/icons/file-vol.png");
 
     bool modevoisinage;
     MyMesh mesh;

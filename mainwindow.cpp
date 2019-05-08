@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->ui->menuExporter->setIcon(icon_export);
     this->ui->actionQuitter->setIcon(icon_quit);
     this->ui->action_RAW->setIcon(icon_file_raw);
+    this->ui->action_VOL->setIcon(icon_file_vol);
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this, SLOT(on_actionOuvrir_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(on_actionQuitter_triggered()));
@@ -311,7 +312,6 @@ void MainWindow::on_action_RAW_triggered()
         }
     }
 }
-
 void MainWindow::on_action_VOL_triggered()
 {
     QString path = QDir::currentPath();

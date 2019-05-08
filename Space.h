@@ -4,6 +4,7 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <iostream>
+#include <fstream>
 
 #include "mainwindow.h"
 
@@ -30,13 +31,10 @@ public:
 
     void VoxelisationVertice(std::vector<int> &v);
 
-    void CreateAllVoxel(ofstream &file);
+    void CreateAllVoxel(std::ofstream &file);
     void DeleteDuplicate(std::vector<int> &v);
 
-
-    void CreateCube(int index, ofstream &file);
-
-
+    void CreateCube(int index, std::ofstream &file);
 
     std::vector<OpenMesh::Vec3f> GenerePoints(int haut, int lon, int lar);
 

@@ -4,5 +4,6 @@
         <file>icons/open.png</file>
         <file>icons/quit.png</file>
         <file>icons/file-raw.png</file>
+        <file>icons/file-vol.png</file>
     </qresource>
 </RCC>
