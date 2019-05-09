@@ -443,7 +443,7 @@ void Space::fillWithVoxels(){
     std::vector<int> newVoxel;
     for(unsigned i = 0; i < activatedVoxel.size(); i++){
         qDebug() << "[DEBUG]" << "Valeur actuelle de i :" << i;
-        for(int k = activatedVoxel.at(i); k <= k+(largeur-(k%largeur)) ; k++){
+        for(int k = activatedVoxel.at(i); k <= k+((largeur-1)-(k%(largeur-1))) ; k++){
             if(std::find(activatedVoxel.begin(), activatedVoxel.end(), k) != activatedVoxel.end()){
                 qDebug() << "[DEBUG]" << "K trouvé :" << k;
                 for(int j = activatedVoxel.at(i); j<=k ; j++){
