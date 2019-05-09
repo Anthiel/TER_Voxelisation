@@ -10,14 +10,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->setupUi(this);
     this->setWindowTitle("Projet TER - Voxélisation");
-    this->ui->DGtalProgressBar->setVisible(false);
-    this->ui->PtalProgressBar->setVisible(false);
+    showOrHideResults(false);
 
     this->ui->actionOuvrir->setIcon(icon_open);
     this->ui->menuExporter->setIcon(icon_export);
     this->ui->actionQuitter->setIcon(icon_quit);
     this->ui->action_RAW->setIcon(icon_file_raw);
     this->ui->action_VOL->setIcon(icon_file_vol);
+
+    this->ui->PtalComboBox->addItem("par vertices", int(Space::VoxelisationByVertice));
+    this->ui->PtalComboBox->addItem("par edges", int(Space::VoxelisationByEdge));
+    this->ui->PtalComboBox->addItem("par faces", int(Space::VoxelisationByFace));
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this, SLOT(on_actionOuvrir_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(on_actionQuitter_triggered()));
@@ -31,7 +34,7 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     DGtal::trace.beginBlock("Voxelizer DGtal");
     DGtal::Mesh<DGtal::Z3i::Point> aMesh;
 
-    this->ui->DGtalProgressBar->setValue(10);
+//    this->ui->DGtalProgressBar->setValue(10);
 
     for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
         VertexHandle current = *curVert;
@@ -39,7 +42,7 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
         aMesh.addVertex(DGtal::Z3i::Point(point[0], point[1], point[2]));
     }
 
-    this->ui->DGtalProgressBar->setValue(40);
+//    this->ui->DGtalProgressBar->setValue(40);
 
     for(MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++){
         FaceHandle current = *curFace;
@@ -57,7 +60,7 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
         }
     }
 
-    this->ui->DGtalProgressBar->setValue(60);
+//    this->ui->DGtalProgressBar->setValue(60);
 
     DGtal::Z3i::Domain domain(DGtal::Z3i::Point(0,0,0), DGtal::Z3i::Point(128, 128, 128));
     DGtal::Z3i::DigitalSet outputSet(domain);
@@ -66,25 +69,33 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     voxelizer.voxelize(outputSet, aMesh, static_cast<double>(this->ui->AccuracySlider->value())/* scaleFactor */);
     DGtal::trace.info()<< "Got " << outputSet.size() << " voxels." << std::endl;
 
-    this->ui->DGtalProgressBar->setValue(90);
+    this->ui->resultsVoxelsCount->setText(QString::number(outputSet.size()));
+//    this->ui->DGtalProgressBar->setValue(90);
 
     DGtal::Board3D<> board;
     for(auto voxel : outputSet)
       board << voxel;
-    board.saveOBJ("voxelizedObject.obj");
+    std::string fileName = (currentFileName + "_voxelizedDGtal.obj").toStdString();
+    board.saveOBJ(fileName);
     DGtal::trace.endBlock();
 
-    this->ui->DGtalProgressBar->setValue(100);
+//    this->ui->DGtalProgressBar->setValue(100);
 
-    OpenMesh::IO::read_mesh(mesh, "voxelizedObject.obj");
-    mesh.update_normals();
-    resetAllColorsAndThickness(&mesh);
-    displayMesh(&mesh);
+//    OpenMesh::IO::read_mesh(mesh, "voxelizedObject.obj");
+//    mesh.update_normals();
+//    resetAllColorsAndThickness(&mesh);
+//    displayMesh(&mesh);
 }
 void MainWindow::voxelizePtal(MyMesh* _mesh){
-    Space world(_mesh);
-    world.CreateSpace();
-    displayMesh(_mesh);
+    Space world(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), this->ui->AccuracySlider->value());
+    world.createSpace();
+    world.voxelize(currentFileName + "_voxelizedPtal.obj");
+    this->ui->resultsVoxelsCount->setText(QString::number(world.getTotalVoxels()));
+
+//    OpenMesh::IO::read_mesh(mesh, "voxelizedMeshPtal.obj");
+//    mesh.update_normals();
+//    resetAllColorsAndThickness(&mesh);
+//    displayMesh(&mesh);
 }
 
 void MainWindow::resetAllColorsAndThickness(MyMesh* _mesh)
@@ -339,6 +350,8 @@ void MainWindow::on_actionOuvrir_triggered()
     // fenêtre de sélection des fichiers
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
 
+    QFileInfo fileInfo = QFileInfo(fileName);
+    currentFileName = fileInfo.baseName();
     // chargement du fichier .obj dans la variable globale "mesh"
     OpenMesh::IO::read_mesh(mesh, fileName.toUtf8().constData());
 
@@ -347,12 +360,11 @@ void MainWindow::on_actionOuvrir_triggered()
     // initialisation des couleurs et épaisseurs (sommets et arêtes) du mesh
     resetAllColorsAndThickness(&mesh);
     this->ui->DGtalButton->setEnabled(true);
-    this->ui->DGtalProgressBar->setVisible(false);
-    this->ui->DGtalProgressBar->setValue(0);
+//    this->ui->DGtalProgressBar->setValue(0);
 
     this->ui->PtalButton->setEnabled(true);
-    this->ui->PtalProgressBar->setVisible(false);
-    this->ui->PtalProgressBar->setValue(0);
+//    this->ui->PtalProgressBar->setValue(0);
+    showOrHideResults(false);
     // on affiche le maillage
     displayMesh(&mesh);
 }
@@ -363,15 +375,23 @@ void MainWindow::on_actionQuitter_triggered()
 
 void MainWindow::on_DGtalButton_clicked()
 {
-    this->ui->DGtalProgressBar->setValue(0);
-    this->ui->DGtalProgressBar->setVisible(true);
+//    this->ui->DGtalProgressBar->setValue(0);
+//    this->ui->DGtalProgressBar->setVisible(true);
+    timer.start();
     this->voxelizeDGtal(&mesh);
+    int mseconds = timer.elapsed();
+    this->ui->resultsTimeCount->setText(QString::number(mseconds));
+    showOrHideResults(true);
 }
 void MainWindow::on_PtalButton_clicked()
 {
-    this->ui->PtalProgressBar->setValue(0);
-    this->ui->PtalProgressBar->setVisible(true);
+//    this->ui->PtalProgressBar->setValue(0);
+//    this->ui->PtalProgressBar->setVisible(true);
+    timer.start();
     this->voxelizePtal(&mesh);
+    int mseconds = timer.elapsed();
+    this->ui->resultsTimeCount->setText(QString::number(mseconds));
+    showOrHideResults(true);
 }
 
 void MainWindow::on_AccuracySlider_valueChanged(int value)
@@ -379,3 +399,12 @@ void MainWindow::on_AccuracySlider_valueChanged(int value)
     this->ui->AccuracyValueLabel->setText(QString::number(value));
 }
 
+void MainWindow::showOrHideResults(bool visible){
+//    this->ui->DGtalProgressBar->setVisible(visible);
+//    this->ui->PtalProgressBar->setVisible(visible);
+    this->ui->resultsLabel->setVisible(visible);
+    this->ui->resultsTimeCount->setVisible(visible);
+    this->ui->resultsTimeLabel->setVisible(visible);
+    this->ui->resultsVoxelsCount->setVisible(visible);
+    this->ui->resultsVoxelsLabel->setVisible(visible);
+}

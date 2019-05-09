@@ -13,44 +13,37 @@ using namespace OpenMesh::Attributes;
 
 typedef OpenMesh::TriMesh_ArrayKernelT<MyTraits> MyMesh;
 
+
+
 class Space
 {
 public:
-    Space(MyMesh* _mesh);
-    void CreateSpace();
-    void InitXYZ();
-    void BuildCubeCoord();
+    enum Voxelisation { VoxelisationByVertice, VoxelisationByEdge, VoxelisationByFace };
+    Space(MyMesh* _mesh, Voxelisation voxelisationType, int size);
+    void createSpace();
+    void initXYZ();
+    void changeSize(int la, int lo, int ha);
+    void changeSize(int nb);
+    void buildCubeCoord();
+    int biggestCoord(float c1, float c2, float c3);
+    void generatePoints(int haut, int lon, int lar);
+    void createAllVoxel(std::ofstream &file);
+    void deleteDuplicate();
 
-    int BiggestCoord(float c1, float c2, float c3);
-
-    void ChangeSize(int la, int lo, int ha);
-    void ChangeSize(int nb);
+    void voxelize(QString fileName);
+    void voxelisationVertice();
+    void voxelisationEdge();
+    void voxelisationFace();
 
     int coefficientVoxel(int index);
     int hauteurVoxel(int index);
-
-    OpenMesh::Vec3f GetVoxelCoord(int VoxelID);
+    OpenMesh::Vec3f getVoxelCoord(int VoxelID);
     int getVoxelIndex(int VertexID);
     int getVoxelIndex(int lo, int lar, int hau);
-
-    void MoyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord);
-
-
-    void VoxelisationVertice(std::vector<int> &v);
-    void VoxelisationEdge(std::vector<int> &v);
-    void VoxelisationFace(std::vector<int> &v);
-
-
-
-    void CreateAllVoxel(std::ofstream &file);
-    void DeleteDuplicate(std::vector<int> &v);
-
-    void CreateCube(int index, std::ofstream &file);
-
-    std::vector<OpenMesh::Vec3f> GenerePoints(int haut, int lon, int lar);
-
-
-public:
+    void moyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord);
+    void createCube(int index, std::ofstream &file);
+    int getTotalVoxels();
+private:
     MyMesh* _mesh;
 
     float xMax, xMin;
@@ -63,8 +56,11 @@ public:
     int nbVoxel;
 
     std::vector<int> activatedVoxel;
+    std::vector<OpenMesh::Vec3f> _points;
 
     float Lvoxel; // largeur d'un voxel
+
+    Voxelisation voxelisationType;
 };
 
 #endif // SPACE_H

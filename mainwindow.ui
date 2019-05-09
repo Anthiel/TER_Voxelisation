@@ -46,22 +46,58 @@
         <number>3</number>
        </property>
        <item>
+        <widget class="QLabel" name="AccuracyLabel">
+         <property name="text">
+          <string>Précision</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="AccuracySlider">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="AccuracyValueLabel">
+         <property name="text">
+          <string>1</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="DGtalButton">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
           <string>Voxéliser (DGtal)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QProgressBar" name="DGtalProgressBar">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="value">
-          <number>0</number>
          </property>
         </widget>
        </item>
@@ -89,14 +125,10 @@
         </widget>
        </item>
        <item>
-        <widget class="QProgressBar" name="PtalProgressBar">
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="PtalComboBox"/>
        </item>
        <item>
-        <spacer name="verticalSpacer">
+        <spacer name="verticalSpacer_4">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -109,9 +141,28 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLabel" name="AccuracyLabel">
+        <widget class="QLabel" name="resultsLabel">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>Précision</string>
+          <string>Résultats:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="resultsVoxelsCount">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>0</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -119,22 +170,35 @@
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="AccuracySlider">
-         <property name="minimum">
-          <number>1</number>
+        <widget class="QLabel" name="resultsVoxelsLabel">
+         <property name="text">
+          <string>voxels</string>
          </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="AccuracyValueLabel">
+        <widget class="QLabel" name="resultsTimeCount">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>1</string>
+          <string>0</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="resultsTimeLabel">
+         <property name="text">
+          <string>milliseconds</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -180,16 +244,6 @@
   <action name="action_RAW">
    <property name="text">
     <string>.RAW</string>
-   </property>
-  </action>
-  <action name="action_DV">
-   <property name="text">
-    <string>.DV</string>
-   </property>
-  </action>
-  <action name="action_3D">
-   <property name="text">
-    <string>.3D</string>
    </property>
   </action>
   <action name="action_VOL">

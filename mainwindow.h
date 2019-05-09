@@ -7,6 +7,7 @@
 #include <QShortcut>
 #include <QDesktopWidget>
 #include <QMessageBox>
+#include <QTime>
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
@@ -53,6 +54,8 @@ public:
     void displayMesh(MyMesh *_mesh, bool isTemperatureMap = false, float mapRange = -1);
     void resetAllColorsAndThickness(MyMesh* _mesh);
 
+    void showOrHideResults(bool visible);
+
 private slots:
     void on_action_RAW_triggered();
     void on_actionOuvrir_triggered();
@@ -75,6 +78,8 @@ private:
     int vertexSelection;
     int edgeSelection;
     int faceSelection;
+    QTime timer;
+    QString currentFileName = "";
 
     Ui::MainWindow *ui;
 };

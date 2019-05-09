@@ -3,16 +3,75 @@
 
 /* Zone imaginaire permettant de représenter une grille 3D */
 
-Space::Space(MyMesh* _mesh)
-{
+Space::Space(MyMesh* _mesh, Voxelisation voxelisationType, int size){
     this->_mesh = _mesh;
-    ChangeSize(200+1, 200+1, 200+1); // 30 voxels de large
+    this->voxelisationType = voxelisationType;
+    this->changeSize(size+1, size+1, size+1);
+    this->initXYZ();
 }
 
+// Créer l'obj permettant de voir le quadrillage
+void Space::createSpace(){
 
-void Space::InitXYZ()
+    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
+        VertexHandle current = *curVert;
+        OpenMesh::Vec3f point = _mesh->point(current);
+
+        if(point[0] < xMin) xMin = point[0];
+        if(point[0] > xMax) xMax = point[0];
+
+        if(point[1] < yMin) yMin = point[1];
+        if(point[1] > yMax) yMax = point[1];
+
+        if(point[2] < zMin) zMin = point[2];
+        if(point[2] > zMax) zMax = point[2];
+    }
+
+    // Créer le space carré, pour avoir des voxels cubiques
+    this->buildCubeCoord();
+
+    //génère les points avec des distances égales en hauteur, longueur et largeur
+    this->generatePoints(hauteur-1, longueur-1, largeur-1);
+}
+
+// Fonction de voxélisation
+void Space::voxelize(QString fileName){
+
+    //création du fichier obj
+    std::ofstream meshObj;
+    meshObj.open(fileName.toStdString());
+
+    //écriture de tous les vertices dans l'obj
+    for(auto i : _points){
+        meshObj << "v " << i << "\n";
+    }
+
+    qDebug() << "[DEBUG]" << "Début de la voxélisation";
+
+    switch(voxelisationType){
+        case VoxelisationByVertice:
+            voxelisationVertice();
+        break;
+        case VoxelisationByEdge:
+            voxelisationEdge();
+        break;
+        case VoxelisationByFace:
+            voxelisationFace();
+        break;
+    }
+
+    qDebug() << "[DEBUG]" << "Fin de la voxélisation";
+
+    deleteDuplicate();
+
+    //Dessine les voxels activés
+    createAllVoxel(meshObj);
+
+    meshObj.close();
+}
+
 // initialisation des valeurs Max et Min
-{
+void Space::initXYZ(){
     VertexHandle initVertex = *(_mesh->vertices_begin());
     OpenMesh::Vec3f initPoint = _mesh->point(initVertex);
 
@@ -21,49 +80,39 @@ void Space::InitXYZ()
     zMax = initPoint[2], zMin = initPoint[2];
 }
 
-int Space::BiggestCoord(float c1, float c2, float c3){
-    /* renvoie l'indice de la plus grande valeur */
-
-    if(c1 >= c2 && c1 >= c3){
-        return 1;
-    }
-    if(c2 >= c3 && c2 >= c1){
-        return 2;
-    }
-    if(c3 >= c1 && c3 >= c2){
-        return 3;
-    }
+// renvoie l'indice de la plus grande valeur
+int Space::biggestCoord(float c1, float c2, float c3){
+    if(c1 >= c2 && c1 >= c3) return 1;
+    if(c2 >= c3 && c2 >= c1) return 2;
+    if(c3 >= c1 && c3 >= c2) return 3;
     return 0;
 }
 
-void Space::BuildCubeCoord(){
-/* transforme le Space en cube */
+// transforme le Space en cube
+void Space::buildCubeCoord(){
 
     float Cx = xMax - xMin;
     float Cy = yMax - yMin;
     float Cz = zMax - zMin;
 
-    int result = BiggestCoord(Cx, Cy, Cz);
-    if(result ==0){
-        qDebug() << "error : BuildCubeCoord : mauvaise valeur renvoyé";
-    }
-    else if(result == 1){
+    unsigned result = biggestCoord(Cx, Cy, Cz);
+    if(result == 0){
+        qDebug() << "[ERROR]" << __FUNCTION__ << "Mauvaise valeur renvoyée";
+    } else if(result == 1){
         float Dxy = Cx-Cy;
         yMax = yMax + Dxy/2.0;
         yMin = yMin - Dxy/2.0;
         float Dxz = Cx-Cz;
         zMax = zMax + Dxz/2.0;
         zMin = zMin - Dxz/2.0;
-    }
-    else if(result == 2){
+    } else if(result == 2) {
         float Dyx = Cy-Cx;
         xMax = xMax + Dyx/2.0;
         xMin = xMin - Dyx/2.0;
         float Dyz = Cy-Cz;
         zMax = zMax + Dyz/2.0;
         zMin = zMin - Dyz/2.0;
-    }
-    else if(result == 3){
+    } else if(result == 3) {
         float Dzx = Cz-Cx;
         xMax = xMax + Dzx/2.0;
         xMin = xMin - Dzx/2.0;
@@ -71,48 +120,120 @@ void Space::BuildCubeCoord(){
         yMax = yMax + Dzy/2.0;
         yMin = yMin - Dzy/2.0;
     }
+
     Cx = xMax - xMin;
     Cy = yMax - yMin;
     Cz = zMax - zMin;
-    qDebug() << "xMax/Min : " << xMax << xMin << "yMax/Min : " << yMax << yMin << "zMax/Min : " << zMax << zMin;
+    qDebug() << "[DEBUG]" << "xMax/Min:" << xMax << xMin << "yMax/Min:" << yMax << yMin << "zMax/Min:" << zMax << zMin;
 }
 
-std::vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
-/* Genere des points alignés dans un rectangle avec distance égale*/
-    std::vector<OpenMesh::Vec3f> points;
+// Génere des points alignés dans un rectangle avec distance égale
+void Space::generatePoints(int haut, int lon, int lar){
+
     for(int ha = 0; ha<=haut; ha++){
         for(int lo = 0; lo<= lon; lo++){
             for(int la = 0; la<=lar; la++){
-                OpenMesh::Vec3f pointTMP = {xMin+(float(la)/float(lar))*(xMax-xMin), yMin+(float(lo)/float(lon))*(yMax-yMin), zMin+(float(ha)/float(haut))*(zMax-zMin)};
-                points.push_back(pointTMP);
+                OpenMesh::Vec3f pointTMP = {
+                    xMin + (float(la) / float(lar)) * (xMax - xMin),
+                    yMin + (float(lo) / float(lon)) *(yMax - yMin),
+                    zMin + (float(ha) / float(haut)) *(zMax - zMin)
+                };
+                this->_points.push_back(pointTMP);
             }
         }
     }
-    return points;
 }
 
-void Space::ChangeSize(int la, int lo, int ha){
-/* permet de changer le nombre de voxel en hauteur, largeur et longueur*/
+// permet de changer le nombre de voxel en hauteur, largeur et longueur
+void Space::changeSize(int la, int lo, int ha){
 
-    largeur = la;
-    hauteur = ha;
-    longueur = lo;
-    nbVoxel = (la-1)*(ha-1)*(lo-1);
-}
-void Space::ChangeSize(int nb){
-/* permet de changer le nombre de voxel en hauteur, largeur et longueur*/
 
-    largeur = nb;
-    hauteur = nb;
-    longueur = nb;
-    nbVoxel = (nb-1)*(nb-1)*(nb-1);
+    this->largeur = la;
+    this->hauteur = ha;
+    this->longueur = lo;
+    this->nbVoxel = (la-1)*(ha-1)*(lo-1);
 }
 
+// permet de changer le nombre de voxel en hauteur, largeur et longueur
+void Space::changeSize(int nb){
+
+
+    this->largeur = nb;
+    this->hauteur = nb;
+    this->longueur = nb;
+    this->nbVoxel = (nb-1)*(nb-1)*(nb-1);
+}
+
+// Voxélisation par vertex
+void Space::voxelisationVertice(){
+
+    // parcours de tous les sommets
+    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
+        VertexHandle current = *curVert;
+        int voxelID = getVoxelIndex(current.idx());
+        activatedVoxel.push_back(voxelID);
+    }
+}
+
+// Voxélisation par edge
+void Space::voxelisationEdge(){
+
+    // parcours des arêtes
+    for (MyMesh::EdgeIter curEdge = _mesh->edges_begin(); curEdge != _mesh->edges_end(); curEdge++) {
+        EdgeHandle eh = *curEdge;
+
+        VertexHandle S1 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 0));
+        VertexHandle S2 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 1));
+
+        int Voxel1 = getVoxelIndex(S1.idx());
+        int Voxel2 = getVoxelIndex(S2.idx());
+        activatedVoxel.push_back(Voxel1);
+        activatedVoxel.push_back(Voxel2);
+
+        OpenMesh::Vec3f V1coord = getVoxelCoord(Voxel1);
+        OpenMesh::Vec3f V2coord = getVoxelCoord(Voxel2);
+
+        moyenneVoxel(activatedVoxel, V1coord, V2coord);
+    }
+}
+
+// Voxélisation par face
+void Space::voxelisationFace(){
+
+    // parcours des faces
+    for (MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++) {
+        std::vector<int> points;
+        for (MyMesh::FaceVertexIter curVert = _mesh->fv_iter(*curFace); curVert.is_valid(); curVert ++) {
+                points.push_back(getVoxelIndex((*curVert).idx()));
+        }
+
+        activatedVoxel.push_back(points[0]);
+        activatedVoxel.push_back(points[1]);
+        activatedVoxel.push_back(points[2]);
+
+        std::vector<int> listpointBase;
+
+        OpenMesh::Vec3f Sommet = getVoxelCoord(points[0]);
+        OpenMesh::Vec3f V1coord = getVoxelCoord(points[1]);
+        OpenMesh::Vec3f V2coord = getVoxelCoord(points[2]);
+
+        moyenneVoxel(activatedVoxel, Sommet, V1coord);
+        moyenneVoxel(activatedVoxel, Sommet, V2coord);
+        moyenneVoxel(activatedVoxel, V1coord, V2coord);
+        moyenneVoxel(listpointBase, V1coord, V2coord);
+
+        for(auto i : listpointBase){
+            OpenMesh::Vec3f ViCoord = getVoxelCoord(i);
+            moyenneVoxel(activatedVoxel, Sommet, ViCoord);
+        }
+    }
+}
+
+// renvoie la valeur qu'il faut rajouter à l'index du voxel pour avoir l'origine
 int Space::coefficientVoxel(int index){
-/* renvoie la valeur qu'il faut rajouter à l'index du voxel pour avoir l'origine */
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
-        qDebug() << "error : Space::coefficientVoxel : dépassement du nombre de voxel total";
+        qDebug() << "[ERROR]" << __FUNCTION__ << "Dépassement du nombre de voxels total";
         return -1;
     }
 
@@ -128,11 +249,10 @@ int Space::coefficientVoxel(int index){
     return coef/nbVoxelLargeur;
 }
 
+// renvoie la hauteur dans la structure du voxel n°index
 int Space::hauteurVoxel(int index){
-    /*renvoie la hauteur dans la structure du voxel n°index*/
-
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
-        qDebug() << "error : Space::hauteurVoxel : dépassement du nombre de voxel total";
+        qDebug() << "[ERROR]" << __FUNCTION__ << "Dépassement du nombre de voxels total";
         return -1;
     }
 
@@ -142,10 +262,9 @@ int Space::hauteurVoxel(int index){
     return (index-1)/nbVoxelParEtage;
 }
 
-OpenMesh::Vec3f Space::GetVoxelCoord(int VoxelID){
+OpenMesh::Vec3f Space::getVoxelCoord(int VoxelID){
     int larg = largeur - 1;
     int longu = longueur - 1;
-    int haut = hauteur - 1;
     int Etage = longu * larg;
 
     int v = VoxelID;
@@ -158,7 +277,6 @@ OpenMesh::Vec3f Space::GetVoxelCoord(int VoxelID){
     OpenMesh::Vec3f point = {lon,lar,h};
     return point;
 }
-
 int Space::getVoxelIndex(int VertexID){
 
     int lar = largeur - 1;
@@ -198,19 +316,15 @@ int Space::getVoxelIndex(int VertexID){
     int Etage = lon * lar;
     return currentLa + currentLon*lar+Etage*currentHau + 1;
 }
-
-
-
 int Space::getVoxelIndex(int lo, int lar, int hau){
     int larg = largeur - 1;
     int longu = longueur - 1;
-    int haut = hauteur - 1;
     int Etage = longu * larg;
 
     return (lar+(lo-1)*(larg)+Etage*(hau-1));
 }
 
-void Space::MoyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord){
+void Space::moyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord){
 
     int V1index = getVoxelIndex(V1coord[0], V1coord[1], V1coord[2]);
     int V2index = getVoxelIndex(V2coord[0], V2coord[1], V2coord[2]);
@@ -250,88 +364,12 @@ void Space::MoyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh:
     v.push_back(VmoyenneIndex);
     v.push_back(VmoyenneIndex2);
 
-    MoyenneVoxel(v, V1coord, VmoyenneCoord2);
-    MoyenneVoxel(v, VmoyenneCoord, V2coord);
+    moyenneVoxel(v, V1coord, VmoyenneCoord2);
+    moyenneVoxel(v, VmoyenneCoord, V2coord);
 }
 
-
-void Space::VoxelisationVertice(std::vector<int> &v){
-
-    // parcours de tous les sommets
-    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
-
-        VertexHandle current = *curVert;
-        int voxelID = getVoxelIndex(current.idx());
-        v.push_back(voxelID);
-    }
-}
-
-
-void Space::VoxelisationEdge(std::vector<int> &v){
-    // parcours de toutes les arêtes
-    int lar = largeur - 1;
-    int lon = longueur - 1;
-    int haut = hauteur - 1;
-
-    // parcours des arêtes
-    for (MyMesh::EdgeIter curEdge = _mesh->edges_begin(); curEdge != _mesh->edges_end(); curEdge++)
-    {
-        EdgeHandle eh = *curEdge;
-
-        VertexHandle S1 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 0));
-        VertexHandle S2 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 1));
-
-        int Voxel1 = getVoxelIndex(S1.idx());
-        int Voxel2 = getVoxelIndex(S2.idx());
-        v.push_back(Voxel1);
-        v.push_back(Voxel2);
-
-        OpenMesh::Vec3f V1coord = GetVoxelCoord(Voxel1);
-        OpenMesh::Vec3f V2coord = GetVoxelCoord(Voxel2);
-
-        MoyenneVoxel(v, V1coord, V2coord);
-    }
-}
-
-void Space::VoxelisationFace(std::vector<int> &v){
-    // parcours de toutes les arêtes
-    int lar = largeur - 1;
-    int lon = longueur - 1;
-    int haut = hauteur - 1;
-
-    // parcours des faces
-    for (MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++)
-    {
-        std::vector<int> points;
-        FaceHandle fh = *curFace;
-        for (MyMesh::FaceVertexIter curVert = _mesh->fv_iter(*curFace); curVert.is_valid(); curVert ++)
-        {
-                points.push_back(getVoxelIndex((*curVert).idx()));
-        }
-
-        v.push_back(points[0]);     v.push_back(points[1]);     v.push_back(points[2]);
-
-        std::vector<int> listpointBase;
-
-        OpenMesh::Vec3f Sommet = GetVoxelCoord(points[0]);
-        OpenMesh::Vec3f V1coord = GetVoxelCoord(points[1]);
-        OpenMesh::Vec3f V2coord = GetVoxelCoord(points[2]);
-
-        MoyenneVoxel(v, Sommet, V1coord);
-        MoyenneVoxel(v, Sommet, V2coord);
-        MoyenneVoxel(v, V1coord, V2coord);
-        MoyenneVoxel(listpointBase, V1coord, V2coord);
-
-        for(auto i : listpointBase){
-            OpenMesh::Vec3f ViCoord = GetVoxelCoord(i);
-            MoyenneVoxel(v, Sommet, ViCoord);
-        }
-    }
-}
-
-
-void Space::CreateCube(int index, std::ofstream &file){
-/* permet de dessiner le voxel à l'index choisie*/
+// permet de dessiner le voxel à l'index choisi
+void Space::createCube(int index, std::ofstream &file){
 
     if(index > (longueur-1)*(hauteur-1)*(largeur-1)){
         qDebug() << "error : Space::CreateCube : dépassement du nombre de voxel total, index : " << index << "pour un maximum de : " << (longueur-1)*(hauteur-1)*(largeur-1);
@@ -384,110 +422,16 @@ void Space::CreateCube(int index, std::ofstream &file){
     file << "f " << vertexBehRightUp << " " << vertexBehRightBottom << " " << vertexFroRightBottom << "\n";
 }
 
-void Space::DeleteDuplicate(std::vector<int> &v){
-    sort(v.begin(), v.end());
-    v.erase(unique(v.begin(), v.end() ), v.end());
+void Space::deleteDuplicate(){
+    std::sort(activatedVoxel.begin(), activatedVoxel.end());
+    activatedVoxel.erase(unique(activatedVoxel.begin(), activatedVoxel.end()), activatedVoxel.end());
 }
-
-void Space::CreateAllVoxel(std::ofstream &file){
+void Space::createAllVoxel(std::ofstream &file){
     for(auto i : activatedVoxel)
-        CreateCube(i, file);
+        createCube(i, file);
 }
 
-
-void Space::CreateSpace()
-/*Créer l'obj permettant de voir le quadrillage*/
-{
-    InitXYZ();
-
-    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
-        VertexHandle current = *curVert;
-        OpenMesh::Vec3f point = _mesh->point(current);
-
-        if(point[0] < xMin)
-            xMin = point[0];
-        if(point[0] > xMax)
-            xMax = point[0];
-
-        if(point[1] < yMin)
-            yMin = point[1];
-        if(point[1] > yMax)
-            yMax = point[1];
-
-        if(point[2] < zMin)
-            zMin = point[2];
-        if(point[2] > zMax)
-            zMax = point[2];
-    }
-
-    // Créer le space carré, pour avoir des voxels cubiques
-    BuildCubeCoord();
-
-    // Precision du voxelisateur, nombre de cube présent en hauteur, Longueur et largeur
-    int haut = hauteur;
-    int lon = longueur;
-    int lar = largeur;
-
-    //génère les points avec des distances égales en hauteur, longueur et largeur
-    std::vector<OpenMesh::Vec3f> points = GenerePoints(haut-1, lon-1, lar-1);
-
-    //création du fichier obj
-    std::ofstream myfile;
-    myfile.open ("example.obj");
-
-    //écriture de tous les vertices dans l'obj
-    for(auto i : points){
-        myfile << "v " << i << "\n";
-    }
-
-    qDebug() << " passage à la voxelisation ";
-    //Voxelisation avec les vertices
-    //VoxelisationVertice(activatedVoxel);
-
-    //Voxelisation avec les edges
-    //VoxelisationEdge(activatedVoxel);
-
-    //Voxelisation avec les faces
-    VoxelisationFace(activatedVoxel);
-
-    qDebug() << " fin de la voxelisation ";
-
-    //supprime les valeurs doubles
-    DeleteDuplicate(activatedVoxel);
-
-    //Dessine les voxels activés
-    CreateAllVoxel(myfile);
-
-    /*
-    //variable permettant de connaitre l'étage, et la distance qu'il y a entre chaque étage
-    int Etage = 0, EtageSuivant = 0;
-
-    for(int h = 0; h<haut; h++){
-        for(int la = 0; la < lar ;la++){
-           for(int lo = 0; lo < lon; lo++){
-
-               EtageSuivant = lar*lon; //taille d'un étage
-               Etage = h*EtageSuivant;
-
-               //plan XZ
-               if(la<lar-1 && lo<lon-1){
-                   myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-                   myfile << "f " << 2 + la + lo*lar + lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-               }
-               // PLAN XY
-               if(h<haut-1 && lo<lon-1){
-                    myfile << "f " << 1 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-                    myfile << "f " << 1 + la + lo*lar +Etage+EtageSuivant<< " " <<  1 + la + lo*lar + lar +Etage+EtageSuivant<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-               }
-               // PLAN YZ
-               if(la<lar-1 && h<haut-1){
-                    myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< "\n";
-                    myfile << "f " << 2 + la + lo*lar +Etage+EtageSuivant<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< "\n";
-               }
-           }
-        }
-    }*/
-    myfile.close();
-
-
+int Space::getTotalVoxels(){
+    return activatedVoxel.size();
 }
+
