@@ -115,6 +115,9 @@
         </widget>
        </item>
        <item>
+        <widget class="QComboBox" name="PtalComboBox"/>
+       </item>
+       <item>
         <widget class="QPushButton" name="PtalButton">
          <property name="enabled">
           <bool>false</bool>
@@ -123,9 +126,6 @@
           <string>Voxéliser (Ptal)</string>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="PtalComboBox"/>
        </item>
        <item>
         <widget class="Line" name="line">
