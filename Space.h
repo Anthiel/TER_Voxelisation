@@ -38,6 +38,9 @@ public:
 
     void VoxelisationVertice(std::vector<int> &v);
     void VoxelisationEdge(std::vector<int> &v);
+    void VoxelisationFace(std::vector<int> &v);
+
+
 
     void CreateAllVoxel(std::ofstream &file);
     void DeleteDuplicate(std::vector<int> &v);

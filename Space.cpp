@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(200+1, 200+1, 200+1); // 30 voxels de large
+    ChangeSize(20+1, 20+1, 20+1); // 30 voxels de large
 }
 
 
@@ -67,13 +67,14 @@ void Space::BuildCubeCoord(){
         float Dzx = Cz-Cx;
         xMax = xMax + Dzx/2.0;
         xMin = xMin - Dzx/2.0;
-        float Dzy = Cz-Cz;
+        float Dzy = Cz-Cy;
         yMax = yMax + Dzy/2.0;
         yMin = yMin - Dzy/2.0;
     }
     Cx = xMax - xMin;
     Cy = yMax - yMin;
     Cz = zMax - zMin;
+    qDebug() << "xMax/Min : " << xMax << xMin << "yMax/Min : " << yMax << yMin << "zMax/Min : " << zMax << zMin;
 }
 
 std::vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
@@ -292,6 +293,39 @@ void Space::VoxelisationEdge(std::vector<int> &v){
     }
 }
 
+void Space::VoxelisationFace(std::vector<int> &v){
+    // parcours de toutes les arêtes
+    int lar = largeur - 1;
+    int lon = longueur - 1;
+    int haut = hauteur - 1;
+
+    // parcours des faces
+    for (MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++)
+    {
+        std::vector<int> points;
+        FaceHandle fh = *curFace;
+        for (MyMesh::FaceVertexIter curVert = _mesh->fv_iter(*curFace); curVert.is_valid(); curVert ++)
+        {
+                points.push_back(getVoxelIndex((*curVert).idx()));
+        }
+
+        v.push_back(points[0]);     v.push_back(points[1]);     v.push_back(points[2]);
+
+        std::vector<int> listpointBase;
+
+        OpenMesh::Vec3f Sommet = GetVoxelCoord(points[0]);
+        OpenMesh::Vec3f V1coord = GetVoxelCoord(points[1]);
+        OpenMesh::Vec3f V2coord = GetVoxelCoord(points[2]);
+
+        MoyenneVoxel(listpointBase, V1coord, V2coord);
+
+        for(auto i : listpointBase){
+            OpenMesh::Vec3f ViCoord = GetVoxelCoord(i);
+            MoyenneVoxel(v, Sommet, ViCoord);
+        }
+    }
+}
+
 
 void Space::CreateCube(int index, std::ofstream &file){
 /* permet de dessiner le voxel à l'index choisie*/
@@ -409,6 +443,9 @@ void Space::CreateSpace()
 
     //Voxelisation avec les edges
     VoxelisationEdge(activatedVoxel);
+
+    //Voxelisation avec les faces
+    //VoxelisationFace(activatedVoxel);
 
     qDebug() << " fin de la voxelisation ";
 
