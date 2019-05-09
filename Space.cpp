@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(10+1, 10+1, 10+1); //30 voxels de large
+    ChangeSize(4+1, 4+1, 4+1); //30 voxels de large
 }
 
 
@@ -405,6 +405,7 @@ void Space::fillWithVoxel(std::vector<int> &v){
                 qDebug() << "K trouvé :" << k;
 
                 for(int j = v.at(i); j<=k ; j++){
+                    qDebug() << "\t  voxel activé :" << k;
                     newVoxel.push_back(j);
                 }
                 i++;
