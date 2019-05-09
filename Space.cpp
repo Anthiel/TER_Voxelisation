@@ -8,6 +8,7 @@ Space::Space(MyMesh* _mesh, Voxelisation voxelisationType, int size){
     this->voxelisationType = voxelisationType;
     this->changeSize(size+1, size+1, size+1);
     this->initXYZ();
+
 }
 
 // Créer l'obj permettant de voir le quadrillage
@@ -59,6 +60,7 @@ void Space::voxelize(QString fileName){
             voxelisationFace();
         break;
     }
+    this->fillWithVoxels();
 
     qDebug() << "[DEBUG]" << "Fin de la voxélisation";
 
@@ -434,4 +436,36 @@ void Space::createAllVoxel(std::ofstream &file){
 int Space::getTotalVoxels(){
     return activatedVoxel.size();
 }
+
+void Space::fillWithVoxels(){
+    //supprime les valeurs doubles
+    deleteDuplicate();
+    std::vector<int> newVoxel;
+    for(unsigned i = 0; i < activatedVoxel.size(); i++){
+        qDebug() << "[DEBUG]" << "Valeur actuelle de i :" << i;
+        for(int k = activatedVoxel.at(i); k <= k+(largeur-(k%largeur)) ; k++){
+            if(std::find(activatedVoxel.begin(), activatedVoxel.end(), k) != activatedVoxel.end()){
+                qDebug() << "[DEBUG]" << "K trouvé :" << k;
+                for(int j = activatedVoxel.at(i); j<=k ; j++){
+                    qDebug() << "\t" << "[DEBUG]" << "Voxel activé :" << k;
+                    newVoxel.push_back(j);
+                }
+                i++;
+                break;
+            }
+        }
+    }
+    qDebug() << "[DEBUG]" << "newVoxel :" << newVoxel;
+    qDebug() << "[DEBUG]" << "v :" << activatedVoxel;
+    std::vector<int> TotalVoxel;
+    TotalVoxel.reserve( newVoxel.size() + activatedVoxel.size() ); // preallocate memory
+    TotalVoxel.insert( TotalVoxel.end(), newVoxel.begin(), newVoxel.end() );
+    TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
+    activatedVoxel = TotalVoxel;
+    qDebug() << "[DEBUG]" << "v combiné:" << activatedVoxel;
+}
+
+
+
+
 

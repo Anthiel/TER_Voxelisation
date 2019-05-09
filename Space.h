@@ -34,6 +34,7 @@ public:
     void voxelisationVertice();
     void voxelisationEdge();
     void voxelisationFace();
+    void fillWithVoxels();
 
     int coefficientVoxel(int index);
     int hauteurVoxel(int index);
@@ -43,6 +44,7 @@ public:
     void moyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord);
     void createCube(int index, std::ofstream &file);
     int getTotalVoxels();
+
 private:
     MyMesh* _mesh;
 
