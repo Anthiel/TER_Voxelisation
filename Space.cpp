@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(20+1, 20+1, 20+1); // 30 voxels de large
+    ChangeSize(200+1, 200+1, 200+1); // 30 voxels de large
 }
 
 
@@ -317,6 +317,9 @@ void Space::VoxelisationFace(std::vector<int> &v){
         OpenMesh::Vec3f V1coord = GetVoxelCoord(points[1]);
         OpenMesh::Vec3f V2coord = GetVoxelCoord(points[2]);
 
+        MoyenneVoxel(v, Sommet, V1coord);
+        MoyenneVoxel(v, Sommet, V2coord);
+        MoyenneVoxel(v, V1coord, V2coord);
         MoyenneVoxel(listpointBase, V1coord, V2coord);
 
         for(auto i : listpointBase){
@@ -442,10 +445,10 @@ void Space::CreateSpace()
     //VoxelisationVertice(activatedVoxel);
 
     //Voxelisation avec les edges
-    VoxelisationEdge(activatedVoxel);
+    //VoxelisationEdge(activatedVoxel);
 
     //Voxelisation avec les faces
-    //VoxelisationFace(activatedVoxel);
+    VoxelisationFace(activatedVoxel);
 
     qDebug() << " fin de la voxelisation ";
 
