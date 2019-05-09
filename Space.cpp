@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(20+1, 20+1, 20+1); // 30 voxels de large
+    ChangeSize(10+1, 10+1, 10+1); //30 voxels de large
 }
 
 
@@ -394,6 +394,35 @@ void Space::CreateAllVoxel(std::ofstream &file){
         CreateCube(i, file);
 }
 
+void Space::fillWithVoxel(std::vector<int> &v){
+    //supprime les valeurs doubles
+    DeleteDuplicate(activatedVoxel);
+    std::vector<int> newVoxel;
+    for(int i = 0; i<v.size();i++){
+        qDebug() << "valeur actuelle de i :" << i;
+        for(int k = v.at(i); k<= k+(largeur-(k%largeur)) ; k++){
+            if(std::find(v.begin(), v.end(), k) != v.end()){
+                qDebug() << "K trouvé :" << k;
+
+                for(int j = v.at(i); j<=k ; j++){
+                    newVoxel.push_back(j);
+                }
+                i++;
+                break;
+            }
+        }
+    }
+    qDebug() << "newVoxel :" << newVoxel;
+    qDebug() << "v :" << v;
+    std::vector<int> TotalVoxel;
+    TotalVoxel.reserve( newVoxel.size() + v.size() ); // preallocate memory
+    TotalVoxel.insert( TotalVoxel.end(), newVoxel.begin(), newVoxel.end() );
+    TotalVoxel.insert( TotalVoxel.end(), v.begin(), v.end() );
+    v = TotalVoxel;
+    qDebug() << "v combiné:" << v;
+}
+
+
 
 void Space::CreateSpace()
 /*Créer l'obj permettant de voir le quadrillage*/
@@ -442,13 +471,16 @@ void Space::CreateSpace()
 
     qDebug() << " passage à la voxelisation ";
     //Voxelisation avec les vertices
-    //VoxelisationVertice(activatedVoxel);
+    /*VoxelisationVertice(activatedVoxel);*/
 
     //Voxelisation avec les edges
-    //VoxelisationEdge(activatedVoxel);
+    /*VoxelisationEdge(activatedVoxel);*/
 
     //Voxelisation avec les faces
     VoxelisationFace(activatedVoxel);
+
+    //remplissage intérieur
+    fillWithVoxel(activatedVoxel);
 
     qDebug() << " fin de la voxelisation ";
 
@@ -458,35 +490,7 @@ void Space::CreateSpace()
     //Dessine les voxels activés
     CreateAllVoxel(myfile);
 
-    /*
-    //variable permettant de connaitre l'étage, et la distance qu'il y a entre chaque étage
-    int Etage = 0, EtageSuivant = 0;
 
-    for(int h = 0; h<haut; h++){
-        for(int la = 0; la < lar ;la++){
-           for(int lo = 0; lo < lon; lo++){
-
-               EtageSuivant = lar*lon; //taille d'un étage
-               Etage = h*EtageSuivant;
-
-               //plan XZ
-               if(la<lar-1 && lo<lon-1){
-                   myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-                   myfile << "f " << 2 + la + lo*lar + lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-               }
-               // PLAN XY
-               if(h<haut-1 && lo<lon-1){
-                    myfile << "f " << 1 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-                    myfile << "f " << 1 + la + lo*lar +Etage+EtageSuivant<< " " <<  1 + la + lo*lar + lar +Etage+EtageSuivant<< " " << 1 + la + lo*lar + lar +Etage<< "\n";
-               }
-               // PLAN YZ
-               if(la<lar-1 && h<haut-1){
-                    myfile << "f " << 1 + la + lo*lar +Etage<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< "\n";
-                    myfile << "f " << 2 + la + lo*lar +Etage+EtageSuivant<< " " << 2 + la + lo*lar +Etage<< " " << 1 + la + lo*lar +Etage+EtageSuivant<< "\n";
-               }
-           }
-        }
-    }*/
     myfile.close();
 
 
