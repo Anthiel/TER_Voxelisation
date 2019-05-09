@@ -66,7 +66,7 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     DGtal::Z3i::DigitalSet outputSet(domain);
     DGtal::MeshVoxelizer<DGtal::Z3i::DigitalSet, 6> voxelizer;
     DGtal::trace.info() << "Digitization..." << std::endl;
-    voxelizer.voxelize(outputSet, aMesh, static_cast<double>(this->ui->AccuracySlider->value())/* scaleFactor */);
+    voxelizer.voxelize(outputSet, aMesh, 4.0/*static_cast<double>(this->ui->AccuracySlider->value()) scaleFactor */);
     DGtal::trace.info()<< "Got " << outputSet.size() << " voxels." << std::endl;
 
     this->ui->resultsVoxelsCount->setText(QString::number(outputSet.size()));
