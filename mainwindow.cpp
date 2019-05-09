@@ -87,9 +87,10 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
 //    displayMesh(&mesh);
 }
 void MainWindow::voxelizePtal(MyMesh* _mesh){
-    Space world(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), this->ui->AccuracySlider->value());
+    int size = this->ui->AccuracySlider->value();
+    Space world(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), size);
     world.createSpace();
-    world.voxelize(currentFileName + "_voxelizedPtal.obj");
+    world.voxelize(currentFileName + "_voxelizedPtal_" + QString::number(size) + ".obj");
     this->ui->resultsVoxelsCount->setText(QString::number(world.getTotalVoxels()));
 
 //    OpenMesh::IO::read_mesh(mesh, "voxelizedMeshPtal.obj");
