@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(200+1, 200+1, 200+1); // 30 voxels de large
+    ChangeSize(20+1, 20+1, 20+1); // 30 voxels de large
 }
 
 

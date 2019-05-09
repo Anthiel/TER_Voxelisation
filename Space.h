@@ -35,15 +35,13 @@ public:
 
     void MoyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord);
 
-
     void VoxelisationVertice(std::vector<int> &v);
     void VoxelisationEdge(std::vector<int> &v);
     void VoxelisationFace(std::vector<int> &v);
 
-
-
     void CreateAllVoxel(std::ofstream &file);
     void DeleteDuplicate(std::vector<int> &v);
+    void fillWithVoxel(std::vector<int> &v);
 
     void CreateCube(int index, std::ofstream &file);
 
