@@ -33,6 +33,8 @@ public:
     int getVoxelIndex(int VertexID);
     int getVoxelIndex(int lo, int lar, int hau);
 
+    void MoyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord);
+
 
     void VoxelisationVertice(std::vector<int> &v);
     void VoxelisationEdge(std::vector<int> &v);

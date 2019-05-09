@@ -6,7 +6,7 @@
 Space::Space(MyMesh* _mesh)
 {
     this->_mesh = _mesh;
-    ChangeSize(30+1, 30+1, 30+1); // 30 voxels de large
+    ChangeSize(200+1, 200+1, 200+1); // 30 voxels de large
 }
 
 
@@ -31,7 +31,7 @@ int Space::BiggestCoord(float c1, float c2, float c3){
         return 2;
     }
     if(c3 >= c1 && c3 >= c2){
-        return 2;
+        return 3;
     }
     return 0;
 }
@@ -74,9 +74,6 @@ void Space::BuildCubeCoord(){
     Cx = xMax - xMin;
     Cy = yMax - yMin;
     Cz = zMax - zMin;
-    qDebug() << "longueur : " << float(Cx);
-    qDebug() << "largeur : " << float(Cz);
-    qDebug() << "hauteur : " << float(Cy);
 }
 
 std::vector<OpenMesh::Vec3f> Space::GenerePoints(int haut, int lon, int lar){
@@ -144,6 +141,22 @@ int Space::hauteurVoxel(int index){
     return (index-1)/nbVoxelParEtage;
 }
 
+OpenMesh::Vec3f Space::GetVoxelCoord(int VoxelID){
+    int larg = largeur - 1;
+    int longu = longueur - 1;
+    int haut = hauteur - 1;
+    int Etage = longu * larg;
+
+    int v = VoxelID;
+
+    int h = (v-1)/Etage + 1 ;
+    v = v - ((h-1) * Etage);
+    int lon = (v-1) / larg + 1;
+    v = v - ((lon-1)*larg);
+    int lar = v;
+    OpenMesh::Vec3f point = {lon,lar,h};
+    return point;
+}
 
 int Space::getVoxelIndex(int VertexID){
 
@@ -185,22 +198,7 @@ int Space::getVoxelIndex(int VertexID){
     return currentLa + currentLon*lar+Etage*currentHau + 1;
 }
 
-OpenMesh::Vec3f Space::GetVoxelCoord(int VoxelID){
-    int larg = largeur - 1;
-    int longu = longueur - 1;
-    int haut = hauteur - 1;
-    int Etage = longu * larg;
 
-    int v = VoxelID;
-
-    int h = (v-1)/Etage + 1 ;
-    v = v - ((h-1) * Etage);
-    int lon = (v-1) / larg + 1;
-    v = v - ((lon-1)*larg);
-    int lar = v;
-    OpenMesh::Vec3f point = {lon,lar,h};
-    return point;
-}
 
 int Space::getVoxelIndex(int lo, int lar, int hau){
     int larg = largeur - 1;
@@ -209,6 +207,50 @@ int Space::getVoxelIndex(int lo, int lar, int hau){
     int Etage = longu * larg;
 
     return (lar+(lo-1)*(larg)+Etage*(hau-1));
+}
+
+void Space::MoyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord){
+
+    int V1index = getVoxelIndex(V1coord[0], V1coord[1], V1coord[2]);
+    int V2index = getVoxelIndex(V2coord[0], V2coord[1], V2coord[2]);
+
+    float res1 = (V1coord[0]+V2coord[0])/2.0;
+    float res2 = (V1coord[1]+V2coord[1])/2.0;
+    float res3 = (V1coord[2]+V2coord[2])/2.0;
+
+    float res21 = res1;
+    float res22 = res2;
+    float res23 = res3;
+
+    if(res1-float(int(res1)) != 0){
+        res1 = float(int(res1))+1;
+        res21 = res1 - 1;
+    }
+    if(res2-float(int(res2)) != 0){
+        res2 = float(int(res2))+1;
+        res22 = res2 - 1;
+    }
+    if(res3-float(int(res3)) != 0){
+        res3 = float(int(res3))+1;
+        res23 = res3 - 1;
+    }
+
+    OpenMesh::Vec3f VmoyenneCoord = {res1, res2, res3};
+    OpenMesh::Vec3f VmoyenneCoord2 = {res21, res22, res23};
+
+
+    int VmoyenneIndex = getVoxelIndex(VmoyenneCoord[0], VmoyenneCoord[1], VmoyenneCoord[2]);
+    int VmoyenneIndex2 = getVoxelIndex(VmoyenneCoord2[0], VmoyenneCoord2[1], VmoyenneCoord2[2]);
+
+
+    if(V1index == VmoyenneIndex || V2index == VmoyenneIndex || V1index == VmoyenneIndex2 || V2index == VmoyenneIndex2){
+        return;
+    }
+    v.push_back(VmoyenneIndex);
+    v.push_back(VmoyenneIndex2);
+
+    MoyenneVoxel(v, V1coord, VmoyenneCoord2);
+    MoyenneVoxel(v, VmoyenneCoord, V2coord);
 }
 
 
@@ -234,6 +276,7 @@ void Space::VoxelisationEdge(std::vector<int> &v){
     for (MyMesh::EdgeIter curEdge = _mesh->edges_begin(); curEdge != _mesh->edges_end(); curEdge++)
     {
         EdgeHandle eh = *curEdge;
+
         VertexHandle S1 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 0));
         VertexHandle S2 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 1));
 
@@ -244,11 +287,9 @@ void Space::VoxelisationEdge(std::vector<int> &v){
 
         OpenMesh::Vec3f V1coord = GetVoxelCoord(Voxel1);
         OpenMesh::Vec3f V2coord = GetVoxelCoord(Voxel2);
-        OpenMesh::Vec3f V2moyenne = {(V1coord[0]+V2coord[0])/2, (V1coord[1]+V2coord[1])/2, (V1coord[2]+V2coord[2])/2};
 
-
+        MoyenneVoxel(v, V1coord, V2coord);
     }
-
 }
 
 
@@ -341,8 +382,6 @@ void Space::CreateSpace()
         if(point[2] > zMax)
             zMax = point[2];
     }
-    qDebug() << "valeur de xMax :" << xMax << " xMin :" << xMin << " yMax :" << yMax << " yMin :" << yMin
-             << " zMax :" << zMax << " zMin :" << zMin;
 
     // Créer le space carré, pour avoir des voxels cubiques
     BuildCubeCoord();
@@ -364,8 +403,14 @@ void Space::CreateSpace()
         myfile << "v " << i << "\n";
     }
 
+    qDebug() << " passage à la voxelisation ";
     //Voxelisation avec les vertices
-    VoxelisationVertice(activatedVoxel);
+    //VoxelisationVertice(activatedVoxel);
+
+    //Voxelisation avec les edges
+    VoxelisationEdge(activatedVoxel);
+
+    qDebug() << " fin de la voxelisation ";
 
     //supprime les valeurs doubles
     DeleteDuplicate(activatedVoxel);
