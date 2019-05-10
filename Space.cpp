@@ -438,7 +438,7 @@ int Space::getTotalVoxels(){
 }
 
 void Space::fillWithVoxels(){
-    //supprime les valeurs doubles
+
     deleteDuplicate();
     //qDebug() << "[DEBUG]" << "v :" << activatedVoxel;
 
