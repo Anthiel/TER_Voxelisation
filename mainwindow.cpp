@@ -397,7 +397,12 @@ void MainWindow::on_PtalButton_clicked()
 
 void MainWindow::on_AccuracySlider_valueChanged(int value)
 {
-    this->ui->AccuracyValueLabel->setText(QString::number(value));
+    this->ui->AccuracyValueSpinbox->setValue(value);
+}
+
+void MainWindow::on_AccuracyValueSpinbox_valueChanged(int arg1)
+{
+    this->ui->AccuracySlider->setValue(arg1);
 }
 
 void MainWindow::showOrHideResults(bool visible){

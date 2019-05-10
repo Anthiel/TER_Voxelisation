@@ -69,12 +69,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="AccuracyValueLabel">
-         <property name="text">
-          <string>1</string>
-         </property>
+        <widget class="QSpinBox" name="AccuracyValueSpinbox">
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>200</number>
          </property>
         </widget>
        </item>

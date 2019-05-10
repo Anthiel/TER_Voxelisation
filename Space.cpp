@@ -168,7 +168,6 @@ void Space::changeSize(int nb){
 
 // Voxélisation par vertex
 void Space::voxelisationVertice(){
-
     // parcours de tous les sommets
     for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
         VertexHandle current = *curVert;
@@ -496,11 +495,7 @@ void Space::fillWithVoxels(){
     std::vector<int> newVoxel;
 
     for(int i = 1; i<=nbVoxel; i++){
-<<<<<<< HEAD
         if(isInsideMesh(i)){
-=======
-        if(isItInsideTheMesh(i)){
->>>>>>> 3cac59dcf12a93e89187ce3fc04c9487464f489c
             newVoxel.push_back(i);
         }
     }
@@ -511,8 +506,3 @@ void Space::fillWithVoxels(){
     TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
     activatedVoxel = TotalVoxel;
 }
-
-
-
-
-
