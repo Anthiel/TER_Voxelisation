@@ -30,7 +30,7 @@ public:
     void createAllVoxel(std::ofstream &file);
     void deleteDuplicate();
 
-    void voxelize(QString fileName);
+    void voxelize(QString fileName, bool fill);
     void voxelisationVertice();
     void voxelisationEdge();
     void voxelisationFace();
@@ -48,7 +48,7 @@ public:
     bool checkWallLongueur(int VoxelID);
     bool checkWallLargeur(int VoxelID);
     bool checkWallHauteur(int VoxelID);
-    bool isItInsideTheMesh(int VoxelID);
+    bool isInsideMesh(int VoxelID);
 
 
 

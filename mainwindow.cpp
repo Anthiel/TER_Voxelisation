@@ -90,7 +90,7 @@ void MainWindow::voxelizePtal(MyMesh* _mesh){
     int size = this->ui->AccuracySlider->value();
     Space world(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), size);
     world.createSpace();
-    world.voxelize(currentFileName + "_voxelizedPtal_" + QString::number(size) + ".obj");
+    world.voxelize(currentFileName + "_voxelizedPtal_" + QString::number(size) + ".obj", this->ui->fillCheckbox->isChecked());
     this->ui->resultsVoxelsCount->setText(QString::number(world.getTotalVoxels()));
 
 //    OpenMesh::IO::read_mesh(mesh, "voxelizedMeshPtal.obj");

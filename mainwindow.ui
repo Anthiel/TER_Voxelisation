@@ -79,6 +79,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="fillCheckbox">
+         <property name="text">
+          <string>Remplir le maillage</string>
+         </property>
+         <property name="tristate">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="Line" name="line_3">
          <property name="minimumSize">
           <size>

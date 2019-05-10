@@ -36,7 +36,7 @@ void Space::createSpace(){
 }
 
 // Fonction de voxélisation
-void Space::voxelize(QString fileName){
+void Space::voxelize(QString fileName, bool fill){
 
     //création du fichier obj
     std::ofstream meshObj;
@@ -60,7 +60,7 @@ void Space::voxelize(QString fileName){
             voxelisationFace();
         break;
     }
-    this->fillWithVoxels();
+    if(fill) this->fillWithVoxels();
 
     qDebug() << "[DEBUG]" << "Fin de la voxélisation";
 
@@ -436,39 +436,6 @@ void Space::createAllVoxel(std::ofstream &file){
 int Space::getTotalVoxels(){
     return activatedVoxel.size();
 }
-/*
-void Space::fillWithVoxels(){
-
-    deleteDuplicate();
-    //qDebug() << "[DEBUG]" << "v :" << activatedVoxel;
-
-    std::vector<int> newVoxel;
-    for(unsigned i = 0; i < activatedVoxel.size(); i++){
-        //qDebug() << "[DEBUG]" << "Valeur actuelle de k :" << activatedVoxel.at(i) << "jusqu'à : "<< activatedVoxel.at(i)+((largeur-1)-(activatedVoxel.at(i)%(largeur-1)));
-        for(int k = activatedVoxel.at(i); k <= activatedVoxel.at(i)+((largeur-1)-(activatedVoxel.at(i)%(largeur-1))) ; k++){
-            //qDebug() << "\t [DEBUG]" << "sur la ligne, point actuel :" << k;
-            k++;
-            if(std::find(activatedVoxel.begin(), activatedVoxel.end(), k) != activatedVoxel.end()){
-                //qDebug() << "\t [DEBUG]" << "valeur trouvé dans la liste :" << k;
-                for(int j = activatedVoxel.at(i)+1; j<k ; j++){
-                    //qDebug() << "\t\t" << "[DEBUG]" << "on active le Voxel n°:" << j;
-                    newVoxel.push_back(j);
-                }
-                break;
-            }
-        }
-        i++;
-    }
-    //qDebug() << "[DEBUG]" << "newVoxel :" << newVoxel;
-    //qDebug() << "[DEBUG]" << "v :" << activatedVoxel;
-    std::vector<int> TotalVoxel;
-    TotalVoxel.reserve( newVoxel.size() + activatedVoxel.size() ); // preallocate memory
-    TotalVoxel.insert( TotalVoxel.end(), newVoxel.begin(), newVoxel.end() );
-    TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
-    activatedVoxel = TotalVoxel;
-    //qDebug() << "[DEBUG]" << "v combiné:" << activatedVoxel;
-}
-*/
 
 bool Space::checkWallHauteur(int VoxelID){
 
@@ -485,7 +452,6 @@ bool Space::checkWallHauteur(int VoxelID){
     }
     return false;
 }
-
 bool Space::checkWallLargeur(int VoxelID){
 
     int barriereHaute = VoxelID+((largeur-1)-(VoxelID%(largeur-1)));
@@ -502,7 +468,6 @@ bool Space::checkWallLargeur(int VoxelID){
     }
     return false;
 }
-
 bool Space::checkWallLongueur(int VoxelID){
 
     int barriereHaute = nbVoxel;
@@ -520,24 +485,18 @@ bool Space::checkWallLongueur(int VoxelID){
     }
     return false;
 }
-
-bool Space::isItInsideTheMesh(int VoxelID){
-    if(checkWallLargeur(VoxelID))
-        if(checkWallLongueur(VoxelID))
-            if(checkWallHauteur(VoxelID))
-                return true;
+bool Space::isInsideMesh(int VoxelID){
+    if(checkWallLargeur(VoxelID) && checkWallLongueur(VoxelID) && checkWallHauteur(VoxelID))
+        return true;
     return false;
 }
 
 void Space::fillWithVoxels(){
-    //supprime les valeurs doubles
     deleteDuplicate();
     std::vector<int> newVoxel;
 
-
     for(int i = 1; i<=nbVoxel; i++){
-        if(isItInsideTheMesh(i)){
-            qDebug() << "le voxel est dans le mesh. ID : " << i;
+        if(isInsideMesh(i)){
             newVoxel.push_back(i);
         }
     }
