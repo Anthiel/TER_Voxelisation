@@ -496,11 +496,8 @@ void Space::fillWithVoxels(){
     std::vector<int> newVoxel;
 
     for(int i = 1; i<=nbVoxel; i++){
-<<<<<<< HEAD
+
         if(isInsideMesh(i)){
-=======
-        if(isItInsideTheMesh(i)){
->>>>>>> 3cac59dcf12a93e89187ce3fc04c9487464f489c
             newVoxel.push_back(i);
         }
     }
