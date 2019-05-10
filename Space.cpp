@@ -436,39 +436,6 @@ void Space::createAllVoxel(std::ofstream &file){
 int Space::getTotalVoxels(){
     return activatedVoxel.size();
 }
-/*
-void Space::fillWithVoxels(){
-    //supprime les valeurs doubles
-    deleteDuplicate();
-    //qDebug() << "[DEBUG]" << "v :" << activatedVoxel;
-
-    std::vector<int> newVoxel;
-    for(unsigned i = 0; i < activatedVoxel.size(); i++){
-        //qDebug() << "[DEBUG]" << "Valeur actuelle de k :" << activatedVoxel.at(i) << "jusqu'à : "<< activatedVoxel.at(i)+((largeur-1)-(activatedVoxel.at(i)%(largeur-1)));
-        for(int k = activatedVoxel.at(i); k <= activatedVoxel.at(i)+((largeur-1)-(activatedVoxel.at(i)%(largeur-1))) ; k++){
-            //qDebug() << "\t [DEBUG]" << "sur la ligne, point actuel :" << k;
-            k++;
-            if(std::find(activatedVoxel.begin(), activatedVoxel.end(), k) != activatedVoxel.end()){
-                //qDebug() << "\t [DEBUG]" << "valeur trouvé dans la liste :" << k;
-                for(int j = activatedVoxel.at(i)+1; j<k ; j++){
-                    //qDebug() << "\t\t" << "[DEBUG]" << "on active le Voxel n°:" << j;
-                    newVoxel.push_back(j);
-                }
-                break;
-            }
-        }
-        i++;
-    }
-    //qDebug() << "[DEBUG]" << "newVoxel :" << newVoxel;
-    //qDebug() << "[DEBUG]" << "v :" << activatedVoxel;
-    std::vector<int> TotalVoxel;
-    TotalVoxel.reserve( newVoxel.size() + activatedVoxel.size() ); // preallocate memory
-    TotalVoxel.insert( TotalVoxel.end(), newVoxel.begin(), newVoxel.end() );
-    TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
-    activatedVoxel = TotalVoxel;
-    //qDebug() << "[DEBUG]" << "v combiné:" << activatedVoxel;
-}
-*/
 
 bool Space::checkWallHauteur(int VoxelID){
 
@@ -534,10 +501,8 @@ void Space::fillWithVoxels(){
     deleteDuplicate();
     std::vector<int> newVoxel;
 
-
     for(int i = 1; i<=nbVoxel; i++){
         if(isItInsideTheMesh(i)){
-            qDebug() << "le voxel est dans le mesh. ID : " << i;
             newVoxel.push_back(i);
         }
     }
