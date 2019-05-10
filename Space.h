@@ -45,6 +45,13 @@ public:
     void createCube(int index, std::ofstream &file);
     int getTotalVoxels();
 
+    bool checkWallLongueur(int VoxelID);
+    bool checkWallLargeur(int VoxelID);
+    bool checkWallHauteur(int VoxelID);
+    bool isItInsideTheMesh(int VoxelID);
+
+
+
 private:
     MyMesh* _mesh;
 

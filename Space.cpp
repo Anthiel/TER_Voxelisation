@@ -436,7 +436,7 @@ void Space::createAllVoxel(std::ofstream &file){
 int Space::getTotalVoxels(){
     return activatedVoxel.size();
 }
-
+/*
 void Space::fillWithVoxels(){
 
     deleteDuplicate();
@@ -467,6 +467,86 @@ void Space::fillWithVoxels(){
     TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
     activatedVoxel = TotalVoxel;
     //qDebug() << "[DEBUG]" << "v combiné:" << activatedVoxel;
+}
+*/
+
+bool Space::checkWallHauteur(int VoxelID){
+
+    int Etage = (longueur-1) * (largeur-1);
+
+    for(int i = VoxelID + Etage ; i<=nbVoxel; i = i + Etage){
+         if(std::find(activatedVoxel.begin(), activatedVoxel.end(), i) != activatedVoxel.end()){
+             for(int j = VoxelID - Etage; j >= 0 ; j = j-Etage){
+                 if(std::find(activatedVoxel.begin(), activatedVoxel.end(), j) != activatedVoxel.end()){
+                     return true;
+                 }
+             }
+         }
+    }
+    return false;
+}
+
+bool Space::checkWallLargeur(int VoxelID){
+
+    int barriereHaute = VoxelID+((largeur-1)-(VoxelID%(largeur-1)));
+    int barriereBasse = barriereHaute - (largeur-1)+1;
+
+    for(int i = VoxelID + 1 ; i<=barriereHaute; i = i + 1){
+         if(std::find(activatedVoxel.begin(), activatedVoxel.end(), i) != activatedVoxel.end()){
+             for(int j = VoxelID - 1; j >= barriereBasse ; j = j-1){
+                 if(std::find(activatedVoxel.begin(), activatedVoxel.end(), j) != activatedVoxel.end()){
+                     return true;
+                 }
+             }
+         }
+    }
+    return false;
+}
+
+bool Space::checkWallLongueur(int VoxelID){
+
+    int barriereHaute = nbVoxel;
+    int barriereBasse = 0;
+    int longu = longueur-1;
+
+    for(int i = VoxelID + longu ; i<=barriereHaute; i = i + longu){
+         if(std::find(activatedVoxel.begin(), activatedVoxel.end(), i) != activatedVoxel.end()){
+             for(int j = VoxelID - longu; j >= barriereBasse ; j = j-longu){
+                 if(std::find(activatedVoxel.begin(), activatedVoxel.end(), j) != activatedVoxel.end()){
+                     return true;
+                 }
+             }
+         }
+    }
+    return false;
+}
+
+bool Space::isItInsideTheMesh(int VoxelID){
+    if(checkWallLargeur(VoxelID))
+        if(checkWallLongueur(VoxelID))
+            if(checkWallHauteur(VoxelID))
+                return true;
+    return false;
+}
+
+void Space::fillWithVoxels(){
+    //supprime les valeurs doubles
+    deleteDuplicate();
+    std::vector<int> newVoxel;
+
+
+    for(int i = 1; i<=nbVoxel; i++){
+        if(isItInsideTheMesh(i)){
+            qDebug() << "le voxel est dans le mesh. ID : " << i;
+            newVoxel.push_back(i);
+        }
+    }
+
+    std::vector<int> TotalVoxel;
+    TotalVoxel.reserve( newVoxel.size() + activatedVoxel.size() );
+    TotalVoxel.insert( TotalVoxel.end(), newVoxel.begin(), newVoxel.end() );
+    TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
+    activatedVoxel = TotalVoxel;
 }
 
 
