@@ -469,13 +469,20 @@ bool Space::checkWallLargeur(int VoxelID){
 }
 bool Space::checkWallLongueur(int VoxelID){
 
-    int barriereHaute = nbVoxel;
-    int barriereBasse = 0;
+    OpenMesh::Vec3f point = getVoxelCoord(VoxelID);
+    int lon = point[0];
     int longu = longueur-1;
+    int max = longu - lon;
+
+    int barriereHaute = VoxelID+max*(largeur-1);
+    int barriereBasse = VoxelID-(lon-1)*(largeur-1);
+
 
     for(int i = VoxelID + longu ; i<=barriereHaute; i = i + longu){
+
          if(std::find(activatedVoxel.begin(), activatedVoxel.end(), i) != activatedVoxel.end()){
              for(int j = VoxelID - longu; j >= barriereBasse ; j = j-longu){
+
                  if(std::find(activatedVoxel.begin(), activatedVoxel.end(), j) != activatedVoxel.end()){
                      return true;
                  }
