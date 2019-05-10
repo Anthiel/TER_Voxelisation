@@ -477,7 +477,6 @@ bool Space::checkWallLongueur(int VoxelID){
     int barriereHaute = VoxelID+max*(largeur-1);
     int barriereBasse = VoxelID-(lon-1)*(largeur-1);
 
-
     for(int i = VoxelID + longu ; i<=barriereHaute; i = i + longu){
 
          if(std::find(activatedVoxel.begin(), activatedVoxel.end(), i) != activatedVoxel.end()){
