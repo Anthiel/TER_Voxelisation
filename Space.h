@@ -49,7 +49,7 @@ public:
     bool checkWallLargeur(int VoxelID);
     bool checkWallHauteur(int VoxelID);
     bool isInsideMesh(int VoxelID);
-
+    void getBoundaries();
 
 
 private:
@@ -66,6 +66,7 @@ private:
 
     std::vector<int> activatedVoxel;
     std::vector<OpenMesh::Vec3f> _points;
+    std::vector<std::vector<VertexHandle>> boundariesVertex;
 
     float Lvoxel; // largeur d'un voxel
 

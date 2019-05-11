@@ -512,8 +512,6 @@ void Space::fillWithVoxels(){
     TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
     activatedVoxel = TotalVoxel;
 }
-
-/*
 void Space::getBoundaries(){
 
     std::vector<EdgeHandle> boundariesEdges;
@@ -522,16 +520,16 @@ void Space::getBoundaries(){
         if(_mesh->is_boundary(*curEdge)) boundariesEdges.push_back(*curEdge);
     }
 
-    std::vector<std::vector<OpenMesh::Vec3f>> boundariesTotal;
+//    qDebug() << "[DEBUG]" << "BoundariesEdges Created";
+
 
     // Pour chaque edge boundary
     for(unsigned i = 0; i < boundariesEdges.size(); i++){
 
-        // On supprime l'élément actuel des élements étudiés
-        boundariesEdges.erase(boundariesEdges.begin() + i);
-
         std::vector<VertexHandle> boundaries;
+
         EdgeHandle eh = boundariesEdges[i];
+        boundariesEdges.erase(boundariesEdges.begin() + i);
 
         // On récupère les deux extrémités
         VertexHandle v1 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 0));
@@ -541,25 +539,50 @@ void Space::getBoundaries(){
         boundaries.push_back(v1);
         boundaries.push_back(v2);
 
+        bool neighborFinded = true;
 
-        // Ma boucle {
+        while(neighborFinded){
 
-        EdgeHandle ehC = boundariesEdges[j];
+            std::vector<bool> neighbors;
 
-        HalfedgeHandle heh0C = _mesh->halfedge_handle(ehC, 0);
-        HalfedgeHandle heh1C = _mesh->halfedge_handle(ehC, 1);
+            for(unsigned j = 0; j < boundariesEdges.size(); j++){
 
-        VertexHandle v1C = _mesh->to_vertex_handle(heh0);
-        VertexHandle v2C = _mesh->to_vertex_handle(heh1);
+                EdgeHandle ehC = boundariesEdges[j];
 
-        // On insère le point qui n'est pas déjà présent dans les boundaries
-        for(unsigned j = 0; j < boundaries.size(); j++){
-            if(v1C == boundaries[j] && std::find(boundaries.begin(), boundaries.end(), v2C) != boundaries.end()) boundaries.push_back(v2C);
-            else if(v2C == boundaries[j] && std::find(boundaries.begin(), boundaries.end(), v1C) != boundaries.end()) boundaries.push_back((v1C);
+                HalfedgeHandle heh0C = _mesh->halfedge_handle(ehC, 0);
+                HalfedgeHandle heh1C = _mesh->halfedge_handle(ehC, 1);
+
+                VertexHandle v1C = _mesh->to_vertex_handle(heh0C);
+                VertexHandle v2C = _mesh->to_vertex_handle(heh1C);
+
+                int neighborIteration = false;
+
+                // On insère le point qui n'est pas déjà présent dans les boundaries
+                for(unsigned k = 0; k < boundaries.size(); k++){
+                    if(v1C == boundaries[k] && std::find(boundaries.begin(), boundaries.end(), v2C) == boundaries.end()) {
+                        boundaries.push_back(v2C);
+                        neighborIteration = true;
+                        boundariesEdges.erase(boundariesEdges.begin() + j);
+                        break;
+                    } else if(v2C == boundaries[k] && std::find(boundaries.begin(), boundaries.end(), v1C) == boundaries.end()) {
+                        boundaries.push_back(v1C);
+                        neighborIteration = true;
+                        boundariesEdges.erase(boundariesEdges.begin() + j);
+                        break;
+                    }
+                }
+                neighbors.push_back(neighborIteration);
+            }
+            neighborFinded = false;
+            for(unsigned k = 0; k < neighbors.size(); k++){
+                if(neighbors[k]) {
+                    neighborFinded = true;
+                    break;
+                }
+            }
         }
-
-        // }
-
+        this->boundariesVertex.push_back(boundaries);
     }
-    */
+//    qDebug() << "[DEBUG]" << "DONE";
+//    qDebug() << "[DEBUG]" << "boundariesTotal Size:" << this->boundariesVertex.size();
 }
