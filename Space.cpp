@@ -512,3 +512,54 @@ void Space::fillWithVoxels(){
     TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
     activatedVoxel = TotalVoxel;
 }
+
+/*
+void Space::getBoundaries(){
+
+    std::vector<EdgeHandle> boundariesEdges;
+
+    for (MyMesh::EdgeIter curEdge = _mesh->edges_begin(); curEdge != _mesh->edges_end(); curEdge++){
+        if(_mesh->is_boundary(*curEdge)) boundariesEdges.push_back(*curEdge);
+    }
+
+    std::vector<std::vector<OpenMesh::Vec3f>> boundariesTotal;
+
+    // Pour chaque edge boundary
+    for(unsigned i = 0; i < boundariesEdges.size(); i++){
+
+        // On supprime l'élément actuel des élements étudiés
+        boundariesEdges.erase(boundariesEdges.begin() + i);
+
+        std::vector<VertexHandle> boundaries;
+        EdgeHandle eh = boundariesEdges[i];
+
+        // On récupère les deux extrémités
+        VertexHandle v1 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 0));
+        VertexHandle v2 = _mesh->to_vertex_handle(_mesh->halfedge_handle(eh, 1));
+
+        // On les ajoute à la boundary actuelle
+        boundaries.push_back(v1);
+        boundaries.push_back(v2);
+
+
+        // Ma boucle {
+
+        EdgeHandle ehC = boundariesEdges[j];
+
+        HalfedgeHandle heh0C = _mesh->halfedge_handle(ehC, 0);
+        HalfedgeHandle heh1C = _mesh->halfedge_handle(ehC, 1);
+
+        VertexHandle v1C = _mesh->to_vertex_handle(heh0);
+        VertexHandle v2C = _mesh->to_vertex_handle(heh1);
+
+        // On insère le point qui n'est pas déjà présent dans les boundaries
+        for(unsigned j = 0; j < boundaries.size(); j++){
+            if(v1C == boundaries[j] && std::find(boundaries.begin(), boundaries.end(), v2C) != boundaries.end()) boundaries.push_back(v2C);
+            else if(v2C == boundaries[j] && std::find(boundaries.begin(), boundaries.end(), v1C) != boundaries.end()) boundaries.push_back((v1C);
+        }
+
+        // }
+
+    }
+    */
+}
