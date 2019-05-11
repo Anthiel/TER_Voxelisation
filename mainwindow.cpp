@@ -86,17 +86,82 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
 //    resetAllColorsAndThickness(&mesh);
 //    displayMesh(&mesh);
 }
+
 void MainWindow::voxelizePtal(MyMesh* _mesh){
+    this->ui->statusBar->showMessage("Voxélisation en cours...");
+
     int size = this->ui->AccuracySlider->value();
     Space world(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), size);
     world.createSpace();
-    world.voxelize(currentFileName + "_voxelizedPtal_" + QString::number(size) + ".obj", this->ui->fillCheckbox->isChecked());
+    QString stillPointsFileName = currentFileName + "_voxelizedPtal_" + QString::number(size) + ".obj";
+    world.voxelize(stillPointsFileName, this->ui->fillCheckbox->isChecked());
     this->ui->resultsVoxelsCount->setText(QString::number(world.getTotalVoxels()));
+
+    //lecture du mesh de l'obj de la voxelisation pour y enlever les points inutiles
+    OpenMesh::IO::read_mesh(mesh, stillPointsFileName.toUtf8().constData());
+    mesh.update_normals();
+    resetAllColorsAndThickness(&mesh);
+    del_uselesspoints(&mesh);
+    system(qPrintable("rm " + stillPointsFileName));
+    system(qPrintable("mv " + noPointsFileName + " " + stillPointsFileName));
+
+    this->ui->statusBar->showMessage("Voxélisation terminée !");
+
 
 //    OpenMesh::IO::read_mesh(mesh, "voxelizedMeshPtal.obj");
 //    mesh.update_normals();
 //    resetAllColorsAndThickness(&mesh);
 //    displayMesh(&mesh);
+}
+
+void MainWindow::del_uselesspoints(MyMesh *_mesh){
+    //supprime les points de Space non utilisés
+
+    std::vector<OpenMesh::Vec3f> _points_gardes;
+
+    //premier tour des sommets du maillage pour supprimer les sommets inutiles et mise à niveau des indices
+    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
+        VertexHandle current = *curVert;
+        if(_mesh->valence(current) == 0){
+            _mesh->delete_vertex(current);
+        }
+    }
+    _mesh->garbage_collection();
+
+    //conservation dans _points_gardes des sommets du maillage
+    for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++){
+        VertexHandle current = *curVert;
+        _points_gardes.push_back(_mesh->point(current));
+    }
+
+    //conservation des faces dans _faces
+    std::vector<std::vector<int>> _faces;
+    for(MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++) {
+        FaceHandle currentFace = *curFace;
+        std::vector<int> sommets;
+        for(MyMesh::FaceVertexIter curfv = _mesh->fv_iter(currentFace); curfv.is_valid(); curfv++){
+            VertexHandle vert = *curfv;
+            sommets.push_back(vert.idx());
+        }
+        _faces.push_back(sommets);
+    }
+
+    //lecture de l'obj du mesh
+    std::ofstream meshObj;
+    noPointsFileName = currentFileName + "test.obj";
+    meshObj.open(noPointsFileName.toStdString());
+
+    //ecriture du nouvel obj
+    //écriture des coordonnées des sommets
+    for(auto i : _points_gardes){
+        meshObj << "v " << i << "\n";
+    }
+
+    //écriture des faces ( f sommet1 sommet2 sommet3 \n)
+    //dans OpenMesh les indices commencent à 0 alors que dans l'écriture d'un obj elle commence à 1, d'où le +1
+    for(auto j : _faces){
+        meshObj << "f " << j[0]+1 << " " << j[1]+1 << " " << j[2]+1 << "\n";
+    }
 }
 
 void MainWindow::resetAllColorsAndThickness(MyMesh* _mesh)

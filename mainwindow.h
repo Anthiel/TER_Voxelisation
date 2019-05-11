@@ -31,12 +31,17 @@ using namespace OpenMesh::Attributes;
 
 
 struct MyTraits : public OpenMesh::DefaultTraits {
-    VertexAttributes( OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color );
+    // use vertex normals and vertex colors
+    VertexAttributes( OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color | OpenMesh::Attributes::Status);
+    // store the previous halfedge
     HalfedgeAttributes( OpenMesh::Attributes::PrevHalfedge );
-    FaceAttributes( OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color );
-    EdgeAttributes( OpenMesh::Attributes::Color );
-    VertexTraits{ float thickness; float value; };
-    EdgeTraits{ float thickness; };
+    // use face normals face colors
+    FaceAttributes( OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color | OpenMesh::Attributes::Status);
+    EdgeAttributes( OpenMesh::Attributes::Color | OpenMesh::Attributes::Status );
+    // vertex thickness
+    VertexTraits{float thickness; float value;};
+    // edge thickness
+    EdgeTraits{float thickness;};
 };
 
 typedef OpenMesh::TriMesh_ArrayKernelT<MyTraits> MyMesh;
@@ -53,7 +58,7 @@ public:
     void voxelizePtal(MyMesh *_mesh);
     void displayMesh(MyMesh *_mesh, bool isTemperatureMap = false, float mapRange = -1);
     void resetAllColorsAndThickness(MyMesh* _mesh);
-
+    void del_uselesspoints(MyMesh *_mesh);
     void showOrHideResults(bool visible);
 
 private slots:
@@ -82,6 +87,7 @@ private:
     int faceSelection;
     QTime timer;
     QString currentFileName = "";
+    QString noPointsFileName = "";
 
     Ui::MainWindow *ui;
 };
