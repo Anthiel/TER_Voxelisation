@@ -42,6 +42,10 @@ void Space::voxelize(QString fileName, bool fill){
     std::ofstream meshObj;
     meshObj.open(fileName.toStdString());
 
+
+    getBoundaries();
+    fillBoundaries();
+
     //écriture de tous les vertices dans l'obj
     for(auto i : _points){
         meshObj << "v " << i << "\n";
@@ -60,6 +64,8 @@ void Space::voxelize(QString fileName, bool fill){
             voxelisationFace();
         break;
     }
+
+
     if(fill) this->fillWithVoxels();
 
     qDebug() << "[DEBUG]" << "Fin de la voxélisation";
@@ -585,4 +591,31 @@ void Space::getBoundaries(){
     }
 //    qDebug() << "[DEBUG]" << "DONE";
 //    qDebug() << "[DEBUG]" << "boundariesTotal Size:" << this->boundariesVertex.size();
+}
+
+void Space::fillBoundaries(){
+
+    for(auto vec : boundariesVertex){
+
+        //OpenMesh::Vec3f Sommet = getVoxelCoord(vec[0].idx());
+
+        for(unsigned i = 2; i < vec.size(); i++){
+
+            std::vector<MyMesh::VertexHandle>  face_vhandles;
+            face_vhandles.clear();
+            face_vhandles.push_back(vec[0]);
+            face_vhandles.push_back(vec[i-1]);
+            face_vhandles.push_back(vec[i]);
+
+            _mesh->add_face(face_vhandles);
+
+
+            //OpenMesh::Vec3f ViCoord = getVoxelCoord(vertex.idx());
+           // qDebug() << "moyenne entre sommet "<< vec[0].idx() << vertex.idx();
+            //moyenneVoxel(activatedVoxel, Sommet, ViCoord);
+        }
+    }
+
+    OpenMesh::IO::write_mesh(*_mesh, "output.obj");
+
 }

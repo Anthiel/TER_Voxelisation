@@ -50,6 +50,8 @@ public:
     bool checkWallHauteur(int VoxelID);
     bool isInsideMesh(int VoxelID);
     void getBoundaries();
+    void fillBoundaries();
+
 
 
 private:
