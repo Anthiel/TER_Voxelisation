@@ -599,13 +599,13 @@ void Space::fillBoundaries(){
 
         //OpenMesh::Vec3f Sommet = getVoxelCoord(vec[0].idx());
 
-        for(unsigned i = 2; i < vec.size(); i++){
+        for(int i = 1; i < vec.size()-1; i++){
 
             std::vector<MyMesh::VertexHandle>  face_vhandles;
             face_vhandles.clear();
             face_vhandles.push_back(vec[0]);
-            face_vhandles.push_back(vec[i-1]);
             face_vhandles.push_back(vec[i]);
+            face_vhandles.push_back(vec[i+1]);
 
             _mesh->add_face(face_vhandles);
 
