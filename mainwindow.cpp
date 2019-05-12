@@ -108,10 +108,10 @@ void MainWindow::voxelizePtal(MyMesh* _mesh){
     this->ui->statusBar->showMessage("Voxélisation terminée !");
 
 
-//    OpenMesh::IO::read_mesh(mesh, "voxelizedMeshPtal.obj");
-//    mesh.update_normals();
-//    resetAllColorsAndThickness(&mesh);
-//    displayMesh(&mesh);
+    OpenMesh::IO::read_mesh(mesh, stillPointsFileName.toUtf8().constData());
+    mesh.update_normals();
+    resetAllColorsAndThickness(&mesh);
+    displayMesh(&mesh);
 }
 
 void MainWindow::del_uselesspoints(MyMesh *_mesh){
