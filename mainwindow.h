@@ -51,14 +51,17 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
     void voxelizeDGtal(MyMesh *_mesh);
     void voxelizePtal(MyMesh *_mesh);
+
     void displayMesh(MyMesh *_mesh, bool isTemperatureMap = false, float mapRange = -1);
     void resetAllColorsAndThickness(MyMesh* _mesh);
-    void del_uselesspoints(MyMesh *_mesh);
+    void deleteUselessVertices(MyMesh *_mesh);
+
+    // Widgets de l'IHM
     void showOrHideResults(bool visible);
     void showOrHideCoverTime(bool visible);
     void showOrHideVoxelTime(bool visible);
@@ -77,7 +80,6 @@ private slots:
     void on_AccuracySlider_valueChanged(int value);
     void on_AccuracyValueSpinbox_valueChanged(int arg1);
 
-
 private:
     const QIcon icon_open = QIcon(":/icons/open.png");
     const QIcon icon_export = QIcon(":/icons/export.png");
@@ -85,11 +87,7 @@ private:
     const QIcon icon_file_raw = QIcon(":/icons/file-raw.png");
     const QIcon icon_file_vol = QIcon(":/icons/file-vol.png");
 
-    bool modevoisinage;
     MyMesh mesh;
-    int vertexSelection;
-    int edgeSelection;
-    int faceSelection;
     QTime timer;
     QString currentFileName = "";
     QString currentBaseFileName = "";

@@ -3,31 +3,37 @@
 #include "Space.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
-    vertexSelection = -1;
-    edgeSelection = -1;
-    faceSelection = -1;
-    modevoisinage = false;
 
     ui->setupUi(this);
+
+    // Setting MainWindow title
     this->setWindowTitle("Projet TER - Voxélisation");
+
+    // Hiding all results by default
     showOrHideResults(false);
     showOrHideCoverTime(false);
     showOrHideVoxelTime(false);
     showOrHideFillTime(false);
     showOrHideGenerateTime(false);
 
+    // Setting icons for menus
     this->ui->actionOuvrir->setIcon(icon_open);
     this->ui->menuExporter->setIcon(icon_export);
     this->ui->actionQuitter->setIcon(icon_quit);
     this->ui->action_RAW->setIcon(icon_file_raw);
     this->ui->action_VOL->setIcon(icon_file_vol);
 
+    // Adding items to combobox
     this->ui->PtalComboBox->addItem("par vertices", int(Space::VoxelisationByVertice));
     this->ui->PtalComboBox->addItem("par edges", int(Space::VoxelisationByEdge));
     this->ui->PtalComboBox->addItem("par faces", int(Space::VoxelisationByFace));
 
+    // Shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this, SLOT(on_actionOuvrir_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(on_actionQuitter_triggered()));
+
+    // Display DGtal current version
+    DGtal::trace.emphase() << "Running DGtal (version " << DGTAL_VERSION << ")" << std::endl;
 }
 MainWindow::~MainWindow() {
     delete ui;
@@ -88,6 +94,7 @@ void MainWindow::voxelizePtal(MyMesh* _mesh){
     int size = this->ui->AccuracySlider->value();
     int msCover = 0, msFill = 0, msVoxelize = 0, msOthers = 0;
     QString stillPointsFileName = currentBaseFileName + "_voxelizedPtal_" + QString::number(size) + ".obj";
+
     Space world = Space(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), size);
 
     world.createSpace();
@@ -130,7 +137,7 @@ void MainWindow::voxelizePtal(MyMesh* _mesh){
     OpenMesh::IO::read_mesh(mesh, stillPointsFileName.toUtf8().constData());
     mesh.update_normals();
     resetAllColorsAndThickness(&mesh);
-    del_uselesspoints(&mesh);
+    deleteUselessVertices(&mesh);
     system(qPrintable("rm " + stillPointsFileName));
     system(qPrintable("mv " + noPointsFileName + " " + stillPointsFileName));
 
@@ -142,7 +149,7 @@ void MainWindow::voxelizePtal(MyMesh* _mesh){
     displayMesh(&mesh);
 }
 
-void MainWindow::del_uselesspoints(MyMesh *_mesh){
+void MainWindow::deleteUselessVertices(MyMesh *_mesh){
     //supprime les points de Space non utilisés
 
     std::vector<OpenMesh::Vec3f> _points_gardes;
