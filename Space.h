@@ -27,10 +27,10 @@ public:
     void buildCubeCoord();
     int biggestCoord(float c1, float c2, float c3);
     void generatePoints(int haut, int lon, int lar);
-    void createAllVoxel(std::ofstream &file);
+    void createAllVoxel(QString filename);
     void deleteDuplicate();
 
-    void voxelize(QString fileName, bool fill);
+    void voxelize(QString fileName);
     void voxelisationVertice();
     void voxelisationEdge();
     void voxelisationFace();

@@ -11,6 +11,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     this->setWindowTitle("Projet TER - Voxélisation");
     showOrHideResults(false);
+    showOrHideCoverTime(false);
+    showOrHideVoxelTime(false);
+    showOrHideFillTime(false);
+    showOrHideGenerateTime(false);
 
     this->ui->actionOuvrir->setIcon(icon_open);
     this->ui->menuExporter->setIcon(icon_export);
@@ -34,15 +38,11 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     DGtal::trace.beginBlock("Voxelizer DGtal");
     DGtal::Mesh<DGtal::Z3i::Point> aMesh;
 
-//    this->ui->DGtalProgressBar->setValue(10);
-
     for(MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++) {
         VertexHandle current = *curVert;
         OpenMesh::Vec3f point = _mesh->point(current);
         aMesh.addVertex(DGtal::Z3i::Point(point[0], point[1], point[2]));
     }
-
-//    this->ui->DGtalProgressBar->setValue(40);
 
     for(MyMesh::FaceIter curFace = _mesh->faces_begin(); curFace != _mesh->faces_end(); curFace++){
         FaceHandle current = *curFace;
@@ -53,14 +53,12 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
         }
         if(verticesIndex.size() == 3) {
             aMesh.addTriangularFace(verticesIndex[0], verticesIndex[1], verticesIndex[2]);
-//            DGtal::trace.info() << "Added triangular face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
+            DGtal::trace.info() << "Added triangular face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << ")" << std::endl;
         } else if(verticesIndex.size() == 4) {
             aMesh.addQuadFace(verticesIndex[0], verticesIndex[1], verticesIndex[2], verticesIndex[3]);
-//            DGtal::trace.info() << "Added quad face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << verticesIndex[3] << ")" << std::endl;
+            DGtal::trace.info() << "Added quad face (" << verticesIndex[0] << " " << verticesIndex[1] << " " << verticesIndex[2] << verticesIndex[3] << ")" << std::endl;
         }
     }
-
-//    this->ui->DGtalProgressBar->setValue(60);
 
     DGtal::Z3i::Domain domain(DGtal::Z3i::Point(0,0,0), DGtal::Z3i::Point(128, 128, 128));
     DGtal::Z3i::DigitalSet outputSet(domain);
@@ -70,7 +68,6 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     DGtal::trace.info()<< "Got " << outputSet.size() << " voxels." << std::endl;
 
     this->ui->resultsVoxelsCount->setText(QString::number(outputSet.size()));
-//    this->ui->DGtalProgressBar->setValue(90);
 
     DGtal::Board3D<> board;
     for(auto voxel : outputSet)
@@ -79,25 +76,57 @@ void MainWindow::voxelizeDGtal(MyMesh* _mesh){
     board.saveOBJ(fileName);
     DGtal::trace.endBlock();
 
-//    this->ui->DGtalProgressBar->setValue(100);
-
 //    OpenMesh::IO::read_mesh(mesh, "voxelizedObject.obj");
 //    mesh.update_normals();
 //    resetAllColorsAndThickness(&mesh);
 //    displayMesh(&mesh);
 }
-
 void MainWindow::voxelizePtal(MyMesh* _mesh){
-    this->ui->statusBar->showMessage("Voxélisation en cours...");
+
+    this->ui->statusBar->showMessage("Voxélisation Ptal en cours...");
 
     int size = this->ui->AccuracySlider->value();
-    Space world(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), size);
-    world.createSpace();
-    QString stillPointsFileName = currentFileName + "_voxelizedPtal_" + QString::number(size) + ".obj";
-    world.voxelize(stillPointsFileName, this->ui->fillCheckbox->isChecked());
-    this->ui->resultsVoxelsCount->setText(QString::number(world.getTotalVoxels()));
+    int msCover = 0, msFill = 0, msVoxelize = 0, msOthers = 0;
+    QString stillPointsFileName = currentBaseFileName + "_voxelizedPtal_" + QString::number(size) + ".obj";
+    Space world = Space(_mesh, static_cast<Space::Voxelisation>(this->ui->PtalComboBox->currentData().toInt()), size);
 
-    //lecture du mesh de l'obj de la voxelisation pour y enlever les points inutiles
+    world.createSpace();
+
+    if(this->ui->coverBoundariesCheckbox->isChecked()){
+        timer.start();
+        world.fillBoundaries();
+        msCover = timer.elapsed();
+        this->ui->coverValue->setText(QString::number(msCover));
+        showOrHideCoverTime(true);
+    }
+
+    timer.start();
+    world.voxelize(stillPointsFileName);
+    msVoxelize = timer.elapsed();
+    this->ui->voxValue->setText(QString::number(msVoxelize));
+    showOrHideVoxelTime(true);
+
+    if(this->ui->fillCheckbox->isChecked()){
+        timer.start();
+        world.fillWithVoxels();
+        msFill = timer.elapsed();
+        this->ui->fillValue->setText(QString::number(msFill));
+        showOrHideFillTime(true);
+    }
+
+    timer.start();
+    world.deleteDuplicate();
+    world.createAllVoxel(stillPointsFileName);
+    msOthers = timer.elapsed();
+
+    this->ui->generateValue->setText(QString::number(msOthers));
+    showOrHideGenerateTime(true);
+
+    int msTotal = 0 + msCover + msFill + msVoxelize + msOthers;
+
+    this->ui->resultsVoxelsCount->setText(QString::number(world.getTotalVoxels()));
+    this->ui->resultsTimeCount->setText(QString::number(msTotal));
+
     OpenMesh::IO::read_mesh(mesh, stillPointsFileName.toUtf8().constData());
     mesh.update_normals();
     resetAllColorsAndThickness(&mesh);
@@ -147,7 +176,7 @@ void MainWindow::del_uselesspoints(MyMesh *_mesh){
 
     //lecture de l'obj du mesh
     std::ofstream meshObj;
-    noPointsFileName = currentFileName + "test.obj";
+    noPointsFileName = currentBaseFileName + "test.obj";
     meshObj.open(noPointsFileName.toStdString());
 
     //ecriture du nouvel obj
@@ -412,24 +441,25 @@ void MainWindow::on_action_VOL_triggered()
 
 void MainWindow::on_actionOuvrir_triggered()
 {
-    // fenêtre de sélection des fichiers
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh"), "", tr("Mesh Files (*.obj)"));
-
     QFileInfo fileInfo = QFileInfo(fileName);
-    currentFileName = fileInfo.baseName();
-    // chargement du fichier .obj dans la variable globale "mesh"
+
+    currentFileName = fileName;
+    currentBaseFileName = fileInfo.baseName();
+
     OpenMesh::IO::read_mesh(mesh, fileName.toUtf8().constData());
 
     mesh.update_normals();
-
-    // initialisation des couleurs et épaisseurs (sommets et arêtes) du mesh
     resetAllColorsAndThickness(&mesh);
-    this->ui->DGtalButton->setEnabled(true);
-//    this->ui->DGtalProgressBar->setValue(0);
 
+    this->ui->DGtalButton->setEnabled(true);
     this->ui->PtalButton->setEnabled(true);
-//    this->ui->PtalProgressBar->setValue(0);
     showOrHideResults(false);
+    showOrHideCoverTime(false);
+    showOrHideVoxelTime(false);
+    showOrHideFillTime(false);
+    showOrHideGenerateTime(false);
+
     // on affiche le maillage
     displayMesh(&mesh);
 }
@@ -440,8 +470,6 @@ void MainWindow::on_actionQuitter_triggered()
 
 void MainWindow::on_DGtalButton_clicked()
 {
-//    this->ui->DGtalProgressBar->setValue(0);
-//    this->ui->DGtalProgressBar->setVisible(true);
     timer.start();
     this->voxelizeDGtal(&mesh);
     int mseconds = timer.elapsed();
@@ -450,12 +478,12 @@ void MainWindow::on_DGtalButton_clicked()
 }
 void MainWindow::on_PtalButton_clicked()
 {
-//    this->ui->PtalProgressBar->setValue(0);
-//    this->ui->PtalProgressBar->setVisible(true);
-    timer.start();
+    showOrHideResults(false);
+    showOrHideCoverTime(false);
+    showOrHideVoxelTime(false);
+    showOrHideFillTime(false);
+    showOrHideGenerateTime(false);
     this->voxelizePtal(&mesh);
-    int mseconds = timer.elapsed();
-    this->ui->resultsTimeCount->setText(QString::number(mseconds));
     showOrHideResults(true);
 }
 
@@ -463,7 +491,6 @@ void MainWindow::on_AccuracySlider_valueChanged(int value)
 {
     this->ui->AccuracyValueSpinbox->setValue(value);
 }
-
 void MainWindow::on_AccuracyValueSpinbox_valueChanged(int arg1)
 {
     this->ui->AccuracySlider->setValue(arg1);
@@ -477,4 +504,28 @@ void MainWindow::showOrHideResults(bool visible){
     this->ui->resultsTimeLabel->setVisible(visible);
     this->ui->resultsVoxelsCount->setVisible(visible);
     this->ui->resultsVoxelsLabel->setVisible(visible);
+}
+void MainWindow::showOrHideCoverTime(bool visible){
+    this->ui->coverLabel->setVisible(visible);
+    this->ui->coverValue->setVisible(visible);
+    this->ui->coverUnit->setVisible(visible);
+    this->ui->coverBar->setVisible(visible);
+
+}
+void MainWindow::showOrHideVoxelTime(bool visible){
+    this->ui->voxLabel->setVisible(visible);
+    this->ui->voxValue->setVisible(visible);
+    this->ui->voxUnit->setVisible(visible);
+}
+void MainWindow::showOrHideFillTime(bool visible){
+    this->ui->fillBar->setVisible(visible);
+    this->ui->fillLabel->setVisible(visible);
+    this->ui->fillValue->setVisible(visible);
+    this->ui->fillUnit->setVisible(visible);
+}
+void MainWindow::showOrHideGenerateTime(bool visible){
+    this->ui->generateBar->setVisible(visible);
+    this->ui->generateLabel->setVisible(visible);
+    this->ui->generateValue->setVisible(visible);
+    this->ui->generateUnit->setVisible(visible);
 }

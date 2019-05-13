@@ -60,6 +60,10 @@ public:
     void resetAllColorsAndThickness(MyMesh* _mesh);
     void del_uselesspoints(MyMesh *_mesh);
     void showOrHideResults(bool visible);
+    void showOrHideCoverTime(bool visible);
+    void showOrHideVoxelTime(bool visible);
+    void showOrHideFillTime(bool visible);
+    void showOrHideGenerateTime(bool visible);
 
 private slots:
     void on_action_RAW_triggered();
@@ -88,6 +92,7 @@ private:
     int faceSelection;
     QTime timer;
     QString currentFileName = "";
+    QString currentBaseFileName = "";
     QString noPointsFileName = "";
 
     Ui::MainWindow *ui;

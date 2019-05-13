@@ -36,11 +36,7 @@ void Space::createSpace(){
 }
 
 // Fonction de voxélisation
-void Space::voxelize(QString fileName, bool fill){
-
-
-    getBoundaries();
-    fillBoundaries();
+void Space::voxelize(QString fileName){
 
     //création du fichier obj
     std::ofstream meshObj;
@@ -65,15 +61,7 @@ void Space::voxelize(QString fileName, bool fill){
         break;
     }
 
-
-    if(fill) this->fillWithVoxels();
-
     qDebug() << "[DEBUG]" << "Fin de la voxélisation";
-
-    deleteDuplicate();
-
-    //Dessine les voxels activés
-    createAllVoxel(meshObj);
 
     meshObj.close();
 }
@@ -433,9 +421,15 @@ void Space::deleteDuplicate(){
     std::sort(activatedVoxel.begin(), activatedVoxel.end());
     activatedVoxel.erase(unique(activatedVoxel.begin(), activatedVoxel.end()), activatedVoxel.end());
 }
-void Space::createAllVoxel(std::ofstream &file){
+void Space::createAllVoxel(QString fileName){
+
+    std::ofstream file;
+    file.open(fileName.toStdString(), std::ios_base::app);
+
     for(auto i : activatedVoxel)
         createCube(i, file);
+
+    file.close();
 }
 
 int Space::getTotalVoxels(){
@@ -590,8 +584,9 @@ void Space::getBoundaries(){
 
 void Space::fillBoundaries(){
 
+    this->getBoundaries();
     for(auto vec : boundariesVertex){
-        for(int i = 1; i < vec.size()-1; i++){
+        for(unsigned i = 1; i < vec.size()-1; i++){
 
             std::vector<MyMesh::VertexHandle>  face_vhandles;
 
