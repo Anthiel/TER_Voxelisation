@@ -47,7 +47,7 @@ void Space::voxelize(QString fileName){
         meshObj << "v " << i << "\n";
     }
 
-    qDebug() << "[DEBUG]" << "Début de la voxélisation";
+//    qDebug() << "[DEBUG]" << "Début de la voxélisation";
 
     switch(voxelisationType){
         case VoxelisationByVertice:
@@ -61,7 +61,7 @@ void Space::voxelize(QString fileName){
         break;
     }
 
-    qDebug() << "[DEBUG]" << "Fin de la voxélisation";
+//    qDebug() << "[DEBUG]" << "Fin de la voxélisation";
 
     meshObj.close();
 }
@@ -120,7 +120,7 @@ void Space::buildCubeCoord(){
     Cx = xMax - xMin;
     Cy = yMax - yMin;
     Cz = zMax - zMin;
-    qDebug() << "[DEBUG]" << "xMax/Min:" << xMax << xMin << "yMax/Min:" << yMax << yMin << "zMax/Min:" << zMax << zMin;
+//    qDebug() << "[DEBUG]" << "xMax/Min:" << xMax << xMin << "yMax/Min:" << yMax << yMin << "zMax/Min:" << zMax << zMin;
 }
 
 // Génere des points alignés dans un rectangle avec distance égale
@@ -318,7 +318,6 @@ int Space::getVoxelIndex(int lo, int lar, int hau){
 
     return (lar+(lo-1)*(larg)+Etage*(hau-1));
 }
-
 void Space::moyenneVoxel(std::vector<int> &v, OpenMesh::Vec3f V1coord, OpenMesh::Vec3f V2coord){
 
     int V1index = getVoxelIndex(V1coord[0], V1coord[1], V1coord[2]);
@@ -495,7 +494,6 @@ bool Space::isInsideMesh(int VoxelID){
         return true;
     return false;
 }
-
 void Space::fillWithVoxels(){
     deleteDuplicate();
     std::vector<int> newVoxel;
@@ -512,6 +510,7 @@ void Space::fillWithVoxels(){
     TotalVoxel.insert( TotalVoxel.end(), activatedVoxel.begin(), activatedVoxel.end() );
     activatedVoxel = TotalVoxel;
 }
+
 void Space::getBoundaries(){
 
     std::vector<EdgeHandle> boundariesEdges;
@@ -581,7 +580,6 @@ void Space::getBoundaries(){
         this->boundariesVertex.push_back(boundaries);
     }
 }
-
 void Space::fillBoundaries(){
 
     this->getBoundaries();

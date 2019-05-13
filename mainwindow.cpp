@@ -198,7 +198,6 @@ void MainWindow::deleteUselessVertices(MyMesh *_mesh){
         meshObj << "f " << j[0]+1 << " " << j[1]+1 << " " << j[2]+1 << "\n";
     }
 }
-
 void MainWindow::resetAllColorsAndThickness(MyMesh* _mesh)
 {
     for (MyMesh::VertexIter curVert = _mesh->vertices_begin(); curVert != _mesh->vertices_end(); curVert++)
@@ -467,11 +466,9 @@ void MainWindow::on_actionOuvrir_triggered()
     showOrHideFillTime(false);
     showOrHideGenerateTime(false);
 
-    // on affiche le maillage
     displayMesh(&mesh);
 }
-void MainWindow::on_actionQuitter_triggered()
-{
+void MainWindow::on_actionQuitter_triggered(){
     QApplication::quit();
 }
 
@@ -504,8 +501,6 @@ void MainWindow::on_AccuracyValueSpinbox_valueChanged(int arg1)
 }
 
 void MainWindow::showOrHideResults(bool visible){
-//    this->ui->DGtalProgressBar->setVisible(visible);
-//    this->ui->PtalProgressBar->setVisible(visible);
     this->ui->resultsLabel->setVisible(visible);
     this->ui->resultsTimeCount->setVisible(visible);
     this->ui->resultsTimeLabel->setVisible(visible);
